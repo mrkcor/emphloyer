@@ -3,5 +3,18 @@
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
+$options = getopt("c:", array("clear"));
+
+if (!isset($options["c"])) {
+  file_put_contents("php://stderr", "You must specify a configuration file with the -c option.");
+  exit(1);
+}
+
 $cli = new Emphloyer\Cli();
-$cli->run();
+$cli->configure($options["c"]);
+
+if (isset($options["clear"])) {
+  $cli->clear();
+} else {
+  $cli->run();
+}
