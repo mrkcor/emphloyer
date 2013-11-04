@@ -25,7 +25,7 @@ class Pipeline {
   /**
    * Push a job onto the pipeline.
    * @param \Emphloyer\Job $job
-   * @return \Emphloyer\Job $savedJob
+   * @return \Emphloyer\Job
    */
   public function enqueue(Job $job) {
     $attributes = $this->backend->enqueue($this->serializeJob($job));
