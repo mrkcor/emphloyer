@@ -2,16 +2,10 @@
 
 namespace Emphloyer;
 
-class PipelineTestJob implements Job {
-  protected $attributes = array();
-
+class PipelineTestJob extends AbstractJob {
   public function __construct($name = "", $again = false) {
     $this->attributes['name'] = $name;
     $this->attributes['try_again'] = $again;
-  }
-
-  public function getId() {
-    return $this->attributes['id'];
   }
 
   public function mayTryAgain() {
@@ -21,14 +15,6 @@ class PipelineTestJob implements Job {
   }
 
   public function perform() {
-  }
-
-  public function getAttributes() {
-    return $this->attributes;
-  }
-
-  public function setAttributes($attributes) {
-    $this->attributes = $attributes;
   }
 }
 
