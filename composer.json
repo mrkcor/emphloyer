@@ -1,5 +1,6 @@
 {
     "name": "mkrmr/emphloyer",
+    "bin": ["bin/emphloyer"],
     "description": "Job processing with pluggable backends made easy",
     "require-dev": {
         "phpunit/phpunit": "3.7.*"
