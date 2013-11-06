@@ -88,6 +88,9 @@ class BossTest extends \PHPUnit_Framework_TestCase {
       ->method('work')
       ->with($job);
 
+    $this->pipeline->expects($this->once())
+      ->method('reconnect');
+
     $this->boss->delegateJob($job);
   }
 

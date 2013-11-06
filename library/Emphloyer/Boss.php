@@ -132,6 +132,7 @@ class Boss {
     foreach ($this->employees as $employee) {
       if ($employee->isFree()) {
         $employee->work($job);
+        $this->pipeline->reconnect();
         break;
       }
     }
