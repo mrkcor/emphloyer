@@ -13,6 +13,12 @@ class MemoryBackend implements Backend {
   protected $failed = array();
 
   /**
+   * Reconnect the backend.
+   */
+  public function reconnect() {
+  }
+
+  /**
    * Push a job onto the pipeline.
    * @param array $attributes Job attributes to save (must include the class name as 'className'
    * @return array $attributes Updated job attributes, the Pipeline will instantiate a new job instance with these updated attributes (this can be useful to pass a job id or some other attribute of importance back to the caller of this method).

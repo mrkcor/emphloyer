@@ -23,6 +23,13 @@ class Pipeline {
   }
 
   /**
+   * Reconnect the backend if required.
+   */
+  public function reconnect() {
+    $this->backend->reconnect();
+  }
+
+  /**
    * Push a job onto the pipeline.
    * @param \Emphloyer\Job $job
    * @return \Emphloyer\Job

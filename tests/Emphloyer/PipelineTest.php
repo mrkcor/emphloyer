@@ -24,6 +24,12 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
     $this->pipeline = new Pipeline($this->backend);
   }
 
+  public function testReconnect() {
+    $this->backend->expects($this->once())
+      ->method('reconnect');
+    $this->pipeline->reconnect();
+  }
+
   public function testEnqueueSerializesAndPassesToBackend() {
     $job = new PipelineTestJob("Mark");
     $this->backend->expects($this->once())
