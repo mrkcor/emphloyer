@@ -14,18 +14,16 @@ class Cli {
    * Configure with PHP code from a file.
    */
   public function configure($filename) {
-    $forkHooks = new Job\ForkHookChain();
     require $filename;
     $this->numberOfEmployees = $numberOfEmployees;
     $this->pipeline = new Pipeline($pipelineBackend);
-    $this->forkHooks = $forkHooks;
   }
 
   /**
    * Run jobs.
    */
   public function run() {
-    $this->workshop = new Workshop(new Boss($this->pipeline), $this->forkHooks, $this->numberOfEmployees);
+    $this->workshop = new Workshop(new Boss($this->pipeline), $this->numberOfEmployees);
     
     declare(ticks = 100);
     pcntl_signal(\SIGINT, array($this, 'handleSignal'));

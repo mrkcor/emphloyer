@@ -13,27 +13,6 @@ class Employee {
   protected $job;
   protected $workPid;
   protected $workState = self::COMPLETE;
-  protected $forkHooks;
-
-  /**
-   * Instantiate a new Employee.
-   * @param \Emphloyer\Job\ForkHookChain $forkHooks
-   * @return \Emphloyer\Employee
-   */
-  public function __construct(Job\ForkHookChain $forkHooks = null) {
-    if (is_null($forkHooks)) {
-      $forkHooks = new Job\ForkHookChain();
-    }
-    $this->forkHooks = $forkHooks;
-  }
-
-  /**
-   * Get the fork hook chain.
-   * @return \Emphloyer\Job\ForkHookChain
-   */
-  public function getForkHooks() {
-    return $this->forkHooks;
-  }
 
   /**
    * Tell the Employee to work on the given job.
@@ -55,7 +34,6 @@ class Employee {
 
     if ($this->workPid == 0) {
       try {
-        $this->getForkHooks()->run($job);
         $job->perform();
         exit(0);
       } catch (\Exception $exception) {

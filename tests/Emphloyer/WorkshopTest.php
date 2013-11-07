@@ -7,19 +7,15 @@ class WorkshopTest extends \PHPUnit_Framework_TestCase {
     $this->boss = $this->getMockBuilder('Emphloyer\Boss')
       ->disableOriginalConstructor()
       ->getMock();
-    $this->workshop = new Workshop($this->boss, $this->getMock('Emphloyer\Job\ForkHookChain'), 2);
+    $this->workshop = new Workshop($this->boss, 2);
   }
 
   public function testConstructor() {
-    $forkHooks = $this->getMock('Emphloyer\Job\ForkHookChain');
     $boss = new Boss($this->getMockBuilder('Emphloyer\Pipeline')->disableOriginalConstructor()->getMock());
-    $workshop = new Workshop($boss, $forkHooks, 2);
+    $workshop = new Workshop($boss, 2);
 
     $employees = $boss->getEmployees();
     $this->assertEquals(2, count($employees));
-
-    $this->assertSame($forkHooks, $employees[0]->getForkHooks());
-    $this->assertSame($forkHooks, $employees[1]->getForkHooks());
   }
 
   public function testRun() {

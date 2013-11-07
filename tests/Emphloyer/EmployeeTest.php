@@ -2,12 +2,6 @@
 
 namespace Emphloyer;
 
-class EmployeeTestForkHook implements Job\ForkHook {
-  public function run(Job $job) {
-    file_put_contents(__DIR__ . "/_files/tmp/hook_" . getmypid() . ".txt", 'Hook from PID ' . getmypid());
-  }
-}
-
 class EmployeeTest extends \PHPUnit_Framework_TestCase {
   public function setUp() {
     $this->employee = new Employee();
@@ -44,17 +38,6 @@ class EmployeeTest extends \PHPUnit_Framework_TestCase {
   public function shortSleepAndFail() {
     usleep(100000);
     throw new \Exception();
-  }
-
-  public function testRunsForkHooksFromForkedProcess() {
-    $forkHooks = new Job\ForkHookChain();
-    $forkHooks->add(new EmployeeTestForkHook());
-    $employee = new Employee($forkHooks);
-    $job = $this->getMock('Emphloyer\Job');
-    $employee->work($job);
-    $pid = $employee->getWorkPid();
-    $employee->getWorkState(true);
-    $this->assertEquals('Hook from PID ' . $pid, file_get_contents($this->tempPath . "/hook_{$pid}.txt"));
   }
 
   public function testIsFree() {

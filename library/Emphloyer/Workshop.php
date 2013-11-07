@@ -8,20 +8,17 @@ namespace Emphloyer;
 class Workshop {
   protected $boss;
   protected $run = false;
-  protected $forkHooks;
 
   /**
    * @param \Emphloyer\Boss $boss
-   * @param \Emphloyer\Job\ForkHookChain $forkHooks
    * @param int $numberOfEmployees
    * @return \Emphloyer\Workshop
    */
-  public function __construct(Boss $boss, Job\ForkHookChain $forkHooks, $numberOfEmployees = 1) {
+  public function __construct(Boss $boss, $numberOfEmployees = 1) {
     $this->boss = $boss;
-    $this->forkHooks = $forkHooks;
 
     for ($i = 0; $i < $numberOfEmployees; $i++) {
-      $this->boss->allocateEmployee(new Employee($this->forkHooks));
+      $this->boss->allocateEmployee(new Employee());
     }
   }
 
