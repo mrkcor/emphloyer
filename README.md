@@ -51,7 +51,7 @@ again or not.
 
 Emphloyer manages its jobs through its pipeline, in order to feed jobs into the
 pipeline and to get jobs out of it you need to connect a backend to it. You can
-either use a backend that someone has built already (such as Emphloyer-PDO) or
+either use a backend that someone has built already (such as [Emphloyer-PDO](https://github.com/mkremer/emphloyer-pdo)) or
 implement your own. To build your own backend you must implement the
 \Emphloyer\Pipeline\Backend interface.
 
