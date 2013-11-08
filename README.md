@@ -76,8 +76,7 @@ so:
 
     /path/to/project/vendor/bin/emphloyer -c /path/to/config_file.php
 
-If you want to clear the Pipeline of jobs you can append the above command with
---clear. 
+If you want to clear the Pipeline of jobs you can add --clear to the above command.
 
 To enqueue jobs in your application code you need to instantiate a Pipeline with
 the appropriate backend as is done in the configuration file, you can then
@@ -94,6 +93,7 @@ this is a new instance loaded with the attributes as returned by the backend's
 enqueue method. The backend should include a unique id attribute that can be 
 used to identify the job (like the Employer-PDO backend does), this can be
 useful if you want to poll whether a job you queued up has been completed. 
+
 The AbstractJob class assumes this attribute is stored as the id field in the 
 attributes array and provides the getId method to access it.  To check on a job 
 you can use the Pipeline's find method with the job id to load it, depending on 
