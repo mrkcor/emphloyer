@@ -13,15 +13,18 @@ You can install Emphloyer through composer with:
 
 ## Usage
 
-To use Emphloyer to run jobs you need to:
+Using Emphloyer is pretty simple, in your application code you queue up jobs and
+running Emphloyer's command line program processes the queue.
+
+Before you can start using Emphloyer you need to:
 
 - Define your own jobs in classes that implement the \Emphloyer\Job interface,
   you can extend the \Emphloyer\AbstractJob if you like. 
-- Hook up Emphloyer with a backend to manage queue of jobs.
+- Hook up Emphloyer with a backend to manage the queueing of jobs.
 
 ### Defining your own jobs
 
-Implementing your own jobs is simple, here's a silly example:
+Here's a silly example of a job impementation:
 
 ```php
 class NameEchoJob extends \Emphloyer\AbstractJob {
@@ -32,20 +35,21 @@ class NameEchoJob extends \Emphloyer\AbstractJob {
    public function perform() {
       echo "Hi, my name is {$this->attributes['name']}.\n";
    }
-
-   public function mayTryAgain() {
-      return false;
-   }
 }
 ```
 
-Anything in the attributes property will get serialized when the job gets queued
+Anything in the attributes array will get serialized when the job gets queued
 up. 
 
-The perform method is what is executed when Emphloyer runs the job.
+The perform method is what is executed when Emphloyer runs the job, if this
+raises an exception then the job will fail. 
 
 When a job fails the mayTryAgain method determines whether it may be attempted
-again or not. 
+again or not. If your backend updates the stored attributes when a job fails 
+and is reset (like the Employer-PDO backend does starting at version 0.1.1) 
+then you could manage whether to retry or not based on a number of attempts. 
+Note that the default implementation in \Emphloyer\AbstractJob simply returns 
+false.
 
 ### Hooking up a backend
 
@@ -67,7 +71,8 @@ $numberOfEmployees = 4;
 ?>
 ```
 
-After setting your configuration file you can execute Emphloyer like so:
+After setting your configuration file you can have Emphloyer process jobs like 
+so:
 
     /path/to/project/vendor/bin/emphloyer -c /path/to/config_file.php
 
@@ -80,8 +85,21 @@ simply enqueue jobs by passing an instance to the enqueue method:
 
 ```php
 $pipelineBackend = new \Emphloyer\Pdo\PipelineBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
-$pipelineBackend->enqueue($job);
+$pipeline = new \Emphloyer\Pipeline($pipelineBackend);
+$queuedJob = $pipeline->enqueue($job);
 ```
+
+As you can see from the above snippet the enqueue method returns a job object,
+this is a new instance loaded with the attributes as returned by the backend's
+enqueue method. The backend should include a unique id attribute that can be 
+used to identify the job (like the Employer-PDO backend does), this can be
+useful if you want to poll whether a job you queued up has been completed. 
+The AbstractJob class assumes this attribute is stored as the id field in the 
+attributes array and provides the getId method to access it.  To check on a job 
+you can use the Pipeline's find method with the job id to load it, depending on 
+the backend completed jobs may no longer be stored in which case that method 
+will return null (the Employer-PDO backend will delete completed jobs from the 
+database for example). 
 
 ## Contributing
 
