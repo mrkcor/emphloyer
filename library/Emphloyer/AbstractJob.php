@@ -25,12 +25,6 @@ abstract class AbstractJob implements Job {
   }
 
   /**
-   * This method must contain the logic that your job must execute.
-   * @return void
-   */
-  abstract public function perform();
-
-  /**
    * Return the attributes to store when queueing this job.
    * @return array
    */
