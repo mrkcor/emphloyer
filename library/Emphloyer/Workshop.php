@@ -32,6 +32,9 @@ class Workshop {
       $this->boss->delegateWork();
       $this->boss->updateProgress();
     } while($this->run);
+
+    $this->boss->waitOnEmployees();
+    $this->boss->updateProgress();
   }
 
   /**
@@ -39,8 +42,6 @@ class Workshop {
    */
   public function stop() {
     $this->run = false;
-    $this->boss->waitOnEmployees();
-    $this->boss->updateProgress();
   }
 
   /**

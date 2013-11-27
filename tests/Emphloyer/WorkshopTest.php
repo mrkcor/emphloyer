@@ -21,19 +21,12 @@ class WorkshopTest extends \PHPUnit_Framework_TestCase {
   public function testRun() {
     $this->boss->expects($this->once())
       ->method('delegateWork');
-    $this->boss->expects($this->once())
+    $this->boss->expects($this->exactly(2))
       ->method('updateProgress');
-
-    $this->workshop->run(false);
-  }
-
-  public function testStop() {
     $this->boss->expects($this->once())
       ->method('waitOnEmployees');
-    $this->boss->expects($this->once())
-      ->method('updateProgress');
 
-    $this->workshop->stop();
+    $this->workshop->run(false);
   }
 
   public function testStopNow() {
