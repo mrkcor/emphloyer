@@ -27,6 +27,7 @@ class Cli {
     
     declare(ticks = 100);
     pcntl_signal(\SIGINT, array($this, 'handleSignal'));
+    pcntl_signal(\SIGTERM, array($this, 'handleSignal'));
     $this->workshop->run();
   }
 
@@ -44,6 +45,7 @@ class Cli {
   public function handleSignal($signo) {
     switch ($signo) {
     case \SIGINT:
+    case \SIGTERM:
       if (!is_null($this->lastSignal) && $this->lastSignal <= (time() - 5)) {
         $this->workshop->stopNow();
       } else {
