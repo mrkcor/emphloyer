@@ -1,3 +1,9 @@
+## 0.2.0 (May 11, 2014)
+
+  - BACKWARDS INCOMPATIBLE CHANGE: $numberOfEmployees configuration setting
+    replaced with $employees array
+  - Allow setting how many processes to spawn for specific types of jobs
+
 ## 0.1.2 (November 27, 2013)
 
   - Correct handling of the CLI stop, prevent new jobs from being distributed.

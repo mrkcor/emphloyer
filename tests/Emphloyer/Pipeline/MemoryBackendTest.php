@@ -28,11 +28,13 @@ class MemoryBackendTest extends \PHPUnit_Framework_TestCase {
   public function testEnqueue() {
     $job = new MemoryBackendTestJob();
     $job->setName('Job 1');
+    $job->setType('misc');
 
     $queuedJob = $this->pipeline->enqueue($job);
     $this->assertEquals(1, $queuedJob->getId());
     $this->assertEquals('Job 1', $queuedJob->getName());
     $this->assertEquals('free', $queuedJob->getStatus());
+    $this->assertEquals('misc', $queuedJob->getType());
 
     $job = new MemoryBackendTestJob();
     $job->setName('Job 2');
@@ -41,11 +43,13 @@ class MemoryBackendTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals(2, $queuedJob->getId());
     $this->assertEquals('Job 2', $queuedJob->getName());
     $this->assertEquals('free', $queuedJob->getStatus());
+    $this->assertEquals('job', $queuedJob->getType());
   }
 
   public function testDequeue() {
     $job = new MemoryBackendTestJob();
     $job->setName('Job 1');
+    $job->setType('misc');
     $this->pipeline->enqueue($job);
     
     $job = new MemoryBackendTestJob();
@@ -63,6 +67,66 @@ class MemoryBackendTest extends \PHPUnit_Framework_TestCase {
     $this->assertEquals('locked', $job->getStatus());
 
     $this->assertNull($this->pipeline->dequeue());
+  }
+
+  public function testDequeueOnlyMatchingTypes() {
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 1');
+    $job->setType('type2');
+    $this->pipeline->enqueue($job);
+    
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 2');
+    $this->pipeline->enqueue($job);
+
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 3');
+    $job->setType('type1');
+    $this->pipeline->enqueue($job);
+
+    $job = $this->pipeline->dequeue(array('only' => array('type1', 'type2')));
+    $this->assertEquals(1, $job->getId());
+    $this->assertEquals('Job 1', $job->getName());
+    $this->assertEquals('locked', $job->getStatus());
+    $this->assertEquals('type2', $job->getType());
+
+    $job = $this->pipeline->dequeue(array('only' => array('type1', 'type2')));
+    $this->assertEquals(3, $job->getId());
+    $this->assertEquals('Job 3', $job->getName());
+    $this->assertEquals('locked', $job->getStatus());
+    $this->assertEquals('type1', $job->getType());
+
+    $this->assertNull($this->pipeline->dequeue(array('only' => array('type1', 'type2'))));
+  }
+
+  public function testDequeueSkipsExcludedTypes() {
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 1');
+    $job->setType('type2');
+    $this->pipeline->enqueue($job);
+    
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 2');
+    $this->pipeline->enqueue($job);
+
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 3');
+    $job->setType('type1');
+    $this->pipeline->enqueue($job);
+
+    $job = $this->pipeline->dequeue(array('exclude' => array('type1')));
+    $this->assertEquals(1, $job->getId());
+    $this->assertEquals('Job 1', $job->getName());
+    $this->assertEquals('locked', $job->getStatus());
+    $this->assertEquals('type2', $job->getType());
+
+    $job = $this->pipeline->dequeue(array('exclude' => array('type1')));
+    $this->assertEquals(2, $job->getId());
+    $this->assertEquals('Job 2', $job->getName());
+    $this->assertEquals('locked', $job->getStatus());
+    $this->assertEquals('job', $job->getType());
+
+    $this->assertNull($this->pipeline->dequeue(array('exclude' => array('type1'))));
   }
 
   public function testFindJob() {

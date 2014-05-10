@@ -22,81 +22,29 @@ class BossTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testGetWorkReturnsJobFromPipeline() {
+    $options = array('only' => array('special'));
+    $employee = new Employee($options);
     $job = $this->getMock('Emphloyer\Job');
     $this->pipeline->expects($this->once())
       ->method('dequeue')
+      ->with($options)
       ->will($this->returnValue($job));
-    $this->assertEquals($job, $this->boss->getWork());
+    $this->assertEquals($job, $this->boss->getWork($employee));
   }
 
   public function testGetWorkReturnsNullWhenThereIsNoWork() {
+    $employee = new Employee();
     $this->pipeline->expects($this->once())
       ->method('dequeue')
+      ->with(array())
       ->will($this->returnValue(null));
-    $this->assertNull($this->boss->getWork());
+    $this->assertNull($this->boss->getWork($employee));
   }
 
-  public function testHasAvailableEmployeeWithAnAvailableEmployee() {
+  public function testDelegateWorkDelegatesToAvailableEmployees() {
     $employee1 = $this->getMock('Emphloyer\Employee');
     $employee2 = $this->getMock('Emphloyer\Employee');
-    $this->boss->allocateEmployee($employee1);
-    $this->boss->allocateEmployee($employee2);
-
-    $employee1->expects($this->once())
-      ->method('isFree')
-      ->will($this->returnValue(false));
-
-    $employee2->expects($this->once())
-      ->method('isFree')
-      ->will($this->returnValue(true));
-
-    $this->assertTrue($this->boss->hasAvailableEmployee());
-  }
-
-  public function testHasAvailableEmployeeWithNoAvailableEmployee() {
-    $employee1 = $this->getMock('Emphloyer\Employee');
-    $employee2 = $this->getMock('Emphloyer\Employee');
-    $this->boss->allocateEmployee($employee1);
-    $this->boss->allocateEmployee($employee2);
-
-    $employee1->expects($this->once())
-      ->method('isFree')
-      ->will($this->returnValue(false));
-
-    $employee2->expects($this->once())
-      ->method('isFree')
-      ->will($this->returnValue(false));
-
-    $this->assertFalse($this->boss->hasAvailableEmployee());
-  }
-
-  public function testDelegateJob() {
-    $employee1 = $this->getMock('Emphloyer\Employee');
-    $employee2 = $this->getMock('Emphloyer\Employee');
-    $this->boss->allocateEmployee($employee1);
-    $this->boss->allocateEmployee($employee2);
-
-    $employee1->expects($this->once())
-      ->method('isFree')
-      ->will($this->returnValue(false));
-
-    $job = $this->getMock('Emphloyer\Job');
-    $employee2->expects($this->once())
-      ->method('isFree')
-      ->will($this->returnValue(true));
-    $employee2->expects($this->once())
-      ->method('work')
-      ->with($job);
-
-    $this->pipeline->expects($this->once())
-      ->method('reconnect');
-
-    $this->boss->delegateJob($job);
-  }
-
-  public function testDelegateWorkDelegatesToAvailableEmployee() {
-    $employee1 = $this->getMock('Emphloyer\Employee');
-    $employee2 = $this->getMock('Emphloyer\Employee');
+    $employee3 = $this->getMock('Emphloyer\Employee');
     $this->boss->allocateEmployee($employee1);
     $this->boss->allocateEmployee($employee2);
 
@@ -108,13 +56,21 @@ class BossTest extends \PHPUnit_Framework_TestCase {
     $employee2->expects($this->any())
       ->method('isFree')
       ->will($this->returnValue(true));
+    $employee2->expects($this->any())
+      ->method('getOptions')
+      ->will($this->returnValue(array('only' => array('special'))));
     $employee2->expects($this->once())
       ->method('work')
       ->with($job);
 
     $this->pipeline->expects($this->once())
       ->method('dequeue')
+      ->with(array('only' => array('special')))
       ->will($this->returnValue($job));
+
+    $this->pipeline->expects($this->once())
+      ->method('reconnect');
+
     $this->boss->delegateWork();
   }
 
@@ -139,8 +95,13 @@ class BossTest extends \PHPUnit_Framework_TestCase {
       ->method('isFree')
       ->will($this->returnValue(true));
 
+    $employee->expects($this->any())
+      ->method('getOptions')
+      ->will($this->returnValue(array()));
+
     $this->pipeline->expects($this->once())
       ->method('dequeue')
+      ->with(array())
       ->will($this->returnValue(null));
 
     $employee->expects($this->never())

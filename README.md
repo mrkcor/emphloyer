@@ -39,7 +39,8 @@ class NameEchoJob extends \Emphloyer\AbstractJob {
 ```
 
 Anything in the attributes array will get serialized when the job gets queued
-up. 
+up. Note that the keys 'className' and 'type' are reserved and should not be
+used in your own job implementations. 
 
 The perform method is what is executed when Emphloyer runs the job, if this
 raises an exception then the job will fail. 
@@ -50,6 +51,12 @@ and is reset (like the Employer-PDO backend does starting at version 0.1.1)
 then you could manage whether to retry or not based on a number of attempts. 
 Note that the default implementation in \Emphloyer\AbstractJob simply returns 
 false.
+
+You can control the number of processes for jobs based on their type. When you
+inherit from the \Emphloyer\AbstractJob class the type will be set to 'job' by
+default, you can use the setType method to set a specific type on an instance
+before you enqueue it or you can override the $type instance variable in your
+class to set another default.
 
 ### Hooking up a backend
 
@@ -66,9 +73,12 @@ configuration file that you reference at runtime, here's an annotated example:
 <?php
 // $pipelineBackend defines the pipeline backend to use
 $pipelineBackend = new \Emphloyer\Pdo\PipelineBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
-// $numberOfEmployees determines the number of concurrent jobs to run, each job is forked off using pcntl_fork
-$numberOfEmployees = 4;
-?>
+// $employees determines the number of concurrent jobs, each job is forked off using pcntl_fork. Each entry is used, so if you specify duplicates that will simply add more employees for those types.
+$employees = array(
+   array("exclude" => array("reports"), "employees" => 2), // fork up to two processes for jobs of any type except 'reports'
+   array("only" => array("reports", "stuff"), "employees" => 1), // fork up to one process for jobs of the types 'reports' and 'stuff'
+   array("employees" => 4), // fork up to four processes for jobs of any type
+);
 ```
 
 After setting your configuration file you can have Emphloyer process jobs like 

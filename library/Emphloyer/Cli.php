@@ -8,14 +8,14 @@ namespace Emphloyer;
 class Cli {
   protected $lastSignal;
   protected $pipeline;
-  protected $numberOfEmployees = 0;
+  protected $employees = array();
 
   /**
    * Configure with PHP code from a file.
    */
   public function configure($filename) {
     require $filename;
-    $this->numberOfEmployees = $numberOfEmployees;
+    $this->employees = $employees;
     $this->pipeline = new Pipeline($pipelineBackend);
   }
 
@@ -23,7 +23,7 @@ class Cli {
    * Run jobs.
    */
   public function run() {
-    $this->workshop = new Workshop(new Boss($this->pipeline), $this->numberOfEmployees);
+    $this->workshop = new Workshop(new Boss($this->pipeline), $this->employees);
     
     declare(ticks = 100);
     pcntl_signal(\SIGINT, array($this, 'handleSignal'));

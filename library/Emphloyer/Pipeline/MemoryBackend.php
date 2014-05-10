@@ -34,13 +34,26 @@ class MemoryBackend implements Backend {
 
   /**
    * Get a job from the pipeline and return its attributes.
+   * @param array $options
    * @return array|null
    */
-  public function dequeue() {
-    if ($attributes = array_shift($this->queue)) {
-      $attributes['status'] = 'locked';
-      $this->locked[] = $attributes;
-      return $attributes;
+  public function dequeue(array $options = array()) {
+    $match = false;
+    foreach ($this->queue as $idx => $attributes) {
+      if (isset($options["exclude"])) {
+        $match = !in_array($attributes["type"], $options["exclude"]);
+      } else if (isset($options["only"])) {
+        $match = in_array($attributes["type"], $options["only"]);
+      } else {
+        $match = true;
+      }
+
+      if ($match) {
+        array_splice($this->queue, $idx, 1);
+        $attributes['status'] = 'locked';
+        $this->locked[] = $attributes;
+        return $attributes;
+      }
     }
   }
 

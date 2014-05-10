@@ -15,6 +15,31 @@ class EmployeeTest extends \PHPUnit_Framework_TestCase {
     mkdir($this->tempPath);
   }
 
+  public function testValidOptions() {
+    $options = array('only' => array('special'));
+    $employee = new Employee($options);
+    $this->assertEquals($options, $employee->getOptions());
+
+    $options = array('exclude' => array('special'));
+    $employee = new Employee($options);
+    $this->assertEquals($options, $employee->getOptions());
+  }
+
+  public function testInvalidOptionsThrowsException() {
+    $invalids = array(
+      array('only' => 'special'),
+      array('exclude' => 'special'),
+    );
+
+    foreach ($invalids as $options) {
+      try {
+        $employee = new Employee($options);
+        $this->fail("InvalidArgumentException was expected.");
+      } catch (\InvalidArgumentException $e) {
+      }
+    }
+  }
+
   public function getCompletingJob() {
     $job = $this->getMock('Emphloyer\Job');
     $job->expects($this->any())

@@ -20,9 +20,10 @@ interface Backend {
 
   /**
    * Get a job from the pipeline and return its attributes.
+   * @param array $options
    * @return array|null
    */
-  public function dequeue();
+  public function dequeue(array $options = array());
 
   /**
    * Find a specific job in the pipeline using its id and return its attributes.

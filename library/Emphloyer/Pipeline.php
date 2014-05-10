@@ -41,10 +41,11 @@ class Pipeline {
 
   /**
    * Get a job from the pipeline.
+   * @param array $options
    * @return \Emphloyer\Job|null
    */
-  public function dequeue() {
-    if ($attributes = $this->backend->dequeue()) {
+  public function dequeue(array $options = array()) {
+    if ($attributes = $this->backend->dequeue($options)) {
       return $this->deserializeJob($attributes);
     }
   }
@@ -98,6 +99,7 @@ class Pipeline {
   protected function serializeJob(Job $job) {
     $attributes = $job->getAttributes();
     $attributes['className'] = get_class($job);
+    $attributes['type'] = $job->getType();
     return $attributes;
   }
 
@@ -111,6 +113,8 @@ class Pipeline {
       $className = $attributes['className'];
       $job = new $className();
       unset($attributes['className']);
+      $job->setType($attributes['type']);
+      unset($attributes['type']);
       $job->setAttributes($attributes);
       return $job;
     }

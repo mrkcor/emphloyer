@@ -10,9 +10,33 @@ class Employee {
   const COMPLETE = 2;
   const FAILED = 3;
 
+  protected $options;
   protected $job;
   protected $workPid;
   protected $workState = self::COMPLETE;
+
+  /**
+   * Instantiate a new Employee.
+   * @param array $options Options that influence the behavior of the employee.
+   * @return \Employee\Employee
+   */
+  public function __construct(array $options = array()) {
+    if (isset($options['only']) && !is_array($options['only'])) {
+      throw new \InvalidArgumentException("The only option must be an array");
+    }
+    if (isset($options['exclude']) && !is_array($options['exclude'])) {
+      throw new \InvalidArgumentException("The exclude option must be an array");
+    }
+    $this->options = $options;
+  }
+
+  /**
+   * Get the Employee options.
+   * @return array
+   */
+  public function getOptions() {
+    return $this->options;
+  }
 
   /**
    * Tell the Employee to work on the given job.

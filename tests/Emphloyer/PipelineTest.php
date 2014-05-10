@@ -34,8 +34,8 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
     $job = new PipelineTestJob("Mark");
     $this->backend->expects($this->once())
       ->method('enqueue')
-      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false)))
-      ->will($this->returnValue(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'id' => 1)));
+      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'type' => 'job')))
+      ->will($this->returnValue(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'id' => 1, 'type' => 'job')));
      
     $savedJob = $this->pipeline->enqueue($job);
     $this->assertInstanceOf('Emphloyer\PipelineTestJob', $savedJob);
@@ -46,10 +46,11 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
     $this->backend->expects($this->once())
       ->method('find')
       ->with(2)
-      ->will($this->returnValue(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Kremer', 'try_again' => false, 'id' => 2)));
+      ->will($this->returnValue(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Kremer', 'try_again' => false, 'id' => 2, 'type' => 'special')));
     $job = $this->pipeline->find(2);
     $this->assertInstanceOf('Emphloyer\PipelineTestJob', $job);
     $this->assertEquals(array('name' => 'Kremer', 'try_again' => false, 'id' => 2), $job->getAttributes());
+    $this->assertEquals('special', $job->getType());
   }
 
   public function testFindReturnsNullWhenBackendReturnsNull() {
@@ -64,10 +65,11 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
   public function testDequeueInstantiatesJobFromBackendAttributes() {
     $this->backend->expects($this->once())
       ->method('dequeue')
-      ->will($this->returnValue(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false)));
+      ->will($this->returnValue(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'type' => 'x')));
     $job = $this->pipeline->dequeue();
     $this->assertInstanceOf('Emphloyer\PipelineTestJob', $job);
     $this->assertEquals(array('name' => 'Mark', 'try_again' => false), $job->getAttributes());
+    $this->assertEquals('x', $job->getType());
   }
 
   public function testDequeueReturnsNullWhenBackendReturnsNull() {
@@ -82,7 +84,7 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
     $job = new PipelineTestJob("Mark");
     $this->backend->expects($this->once())
       ->method('reset')
-      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false)));
+      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'type' => 'job')));
     $this->pipeline->reset($job);
   }
 
@@ -90,7 +92,7 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
     $job = new PipelineTestJob("Mark");
     $this->backend->expects($this->once())
       ->method('complete')
-      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false)));
+      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'type' => 'job')));
     $this->pipeline->complete($job);
   }
 
@@ -98,7 +100,7 @@ class PipelineTest extends \PHPUnit_Framework_TestCase {
     $job = new PipelineTestJob("Mark");
     $this->backend->expects($this->once())
       ->method('fail')
-      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false)));
+      ->with($this->equalTo(array('className' => 'Emphloyer\PipelineTestJob', 'name' => 'Mark', 'try_again' => false, 'type' => 'job')));
     $this->pipeline->fail($job);
   }
 

@@ -27,11 +27,16 @@ class Boss {
   }
 
   /**
-   * Allocate the next job from the pipeline to the first available employee.
+   * Cycle through all available employees and allocate work when it is available.
    */
   public function delegateWork() {
-    if ($this->hasAvailableEmployee() && $job = $this->getWork()) {
-      $this->delegateJob($job);
+    foreach ($this->employees as $employee) {
+      if ($employee->isFree()) {
+        if ($job = $this->getWork($employee)) {
+          $employee->work($job);
+          $this->pipeline->reconnect();
+        }
+      }
     }
   }
 
@@ -98,43 +103,16 @@ class Boss {
   }
 
   /**
-   * Check if there is atleast one free employee.
-   * @return bool
-   */
-  public function hasAvailableEmployee() {
-    foreach ($this->employees as $employee) {
-      if ($employee->isFree()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * Obtain a job from the pipeline.
+   * Obtain a job from the pipeline for the given Employee.
    * @return \Emphloyer\Job|null
    */
-  public function getWork() {
-    $job = $this->pipeline->dequeue();
+  public function getWork(Employee $employee) {
+    $job = $this->pipeline->dequeue($employee->getOptions());
 
     if (is_null($job)) {
       usleep(10000);
     }
 
     return $job;
-  }
-
-  /**
-   * Allocate a job to an available employee.
-   * @param \Emphloyer\Job $job
-   */
-  public function delegateJob(Job $job) {
-    foreach ($this->employees as $employee) {
-      if ($employee->isFree()) {
-        $employee->work($job);
-        $this->pipeline->reconnect();
-        break;
-      }
-    }
   }
 }

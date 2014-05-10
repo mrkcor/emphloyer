@@ -14,6 +14,20 @@ interface Job {
   public function getId();
 
   /**
+   * Return the type of the job. Setting the type in your own implementations
+   * allows you to control how much bandwith particular jobs get.
+   * @return string
+   */
+  public function getType();
+
+  /**
+   * Set the type of the job.
+   * @param string $type
+   * @return void
+   */
+  public function setType($type);
+
+  /**
    * If this method returns true then this job will be retried on failure.
    * @return bool
    */

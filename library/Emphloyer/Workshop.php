@@ -11,14 +11,16 @@ class Workshop {
 
   /**
    * @param \Emphloyer\Boss $boss
-   * @param int $numberOfEmployees
+   * @param array $employees
    * @return \Emphloyer\Workshop
    */
-  public function __construct(Boss $boss, $numberOfEmployees = 1) {
+  public function __construct(Boss $boss, array $employees = array()) {
     $this->boss = $boss;
 
-    for ($i = 0; $i < $numberOfEmployees; $i++) {
-      $this->boss->allocateEmployee(new Employee());
+    foreach ($employees as $options) {
+      for ($i = 0; $i < $options["employees"]; $i++) {
+        $this->boss->allocateEmployee(new Employee($options));
+      }
     }
   }
 
