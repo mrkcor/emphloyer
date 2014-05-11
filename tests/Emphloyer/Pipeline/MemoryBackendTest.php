@@ -129,6 +129,33 @@ class MemoryBackendTest extends \PHPUnit_Framework_TestCase {
     $this->assertNull($this->pipeline->dequeue(array('exclude' => array('type1'))));
   }
 
+  public function testDequeueNotBefore() {
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 1');
+    $job->setType('misc');
+    $this->pipeline->enqueue($job, new \DateTime('+2 seconds'));
+    
+    $job = new MemoryBackendTestJob();
+    $job->setName('Job 2');
+    $this->pipeline->enqueue($job);
+
+    $job = $this->pipeline->dequeue();
+    $this->assertEquals(2, $job->getId());
+    $this->assertEquals('Job 2', $job->getName());
+    $this->assertEquals('locked', $job->getStatus());
+
+    sleep(1);
+    $this->assertNull($this->pipeline->dequeue());
+
+    sleep(1);
+    $job = $this->pipeline->dequeue();
+    $this->assertEquals(1, $job->getId());
+    $this->assertEquals('Job 1', $job->getName());
+    $this->assertEquals('locked', $job->getStatus());
+
+    $this->assertNull($this->pipeline->dequeue());
+  }
+
   public function testFindJob() {
     $job1 = new MemoryBackendTestJob();
     $job1->setName('Job 1');

@@ -31,11 +31,12 @@ class Pipeline {
 
   /**
    * Push a job onto the pipeline.
-   * @param \Emphloyer\Job $job
+   * @param \Emphloyer\Job $job Job to enqueue
+   * @param \DateTime|null $notBefore Date and time after which this job may be run
    * @return \Emphloyer\Job
    */
-  public function enqueue(Job $job) {
-    $attributes = $this->backend->enqueue($this->serializeJob($job));
+  public function enqueue(Job $job, \DateTime $notBefore = null) {
+    $attributes = $this->backend->enqueue($this->serializeJob($job), $notBefore);
     return $this->deserializeJob($attributes);
   }
 

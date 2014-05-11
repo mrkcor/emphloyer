@@ -21,13 +21,15 @@ class MemoryBackend implements Backend {
   /**
    * Push a job onto the pipeline.
    * @param array $attributes Job attributes to save (must include the class name as 'className'
+   * @param \DateTime|null $notBefore Date and time after which this job may be run
    * @return array $attributes Updated job attributes, the Pipeline will instantiate a new job instance with these updated attributes (this can be useful to pass a job id or some other attribute of importance back to the caller of this method).
    */
-  public function enqueue($attributes) {
+  public function enqueue($attributes, \DateTime $notBefore = null) {
     $this->nr += 1;
     $id = $this->nr;
     $attributes['id'] = $id;
     $attributes['status'] = 'free';
+    $attributes['not_before'] = $notBefore;
     $this->queue[] = $attributes;
     return $attributes;
   }
@@ -46,6 +48,10 @@ class MemoryBackend implements Backend {
         $match = in_array($attributes["type"], $options["only"]);
       } else {
         $match = true;
+      }
+
+      if ($match) {
+        $match = is_null($attributes['not_before']) || ($attributes['not_before'] <= new \DateTime());
       }
 
       if ($match) {

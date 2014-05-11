@@ -14,9 +14,10 @@ interface Backend {
   /**
    * Push a job onto the pipeline.
    * @param array $attributes Job attributes to save (must include the class name as 'className'
+   * @param \DateTime|null $notBefore Date and time after which this job may be run
    * @return array $attributes Updated job attributes, the Pipeline will instantiate a new job instance with these updated attributes (this can be useful to pass a job id or some other attribute of importance back to the caller of this method).
    */
-  public function enqueue($attributes);
+  public function enqueue($attributes, \DateTime $notBefore = null);
 
   /**
    * Get a job from the pipeline and return its attributes.

@@ -1,3 +1,12 @@
+## 0.3.0 (unreleased)
+
+  - BACKWARDS INCOMPATIBLE CHANGE: Backend::enqueue method must accept an
+    optional DateTime parameter to indicate from which date and time in the
+    future the job may be executed.
+  - Adds scheduler component which allows you to have jobs execute at set
+    intervals like in the *nix crontab. The scheduler pushes jobs into the
+    pipeline as you have scheduled.
+
 ## 0.2.0 (May 11, 2014)
 
   - BACKWARDS INCOMPATIBLE CHANGE: $numberOfEmployees configuration setting
