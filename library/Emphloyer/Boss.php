@@ -7,15 +7,17 @@ namespace Emphloyer;
  */
 class Boss {
   protected $pipeline;
+  protected $scheduler;
   protected $employees = array();
 
   /**
    * @param \Emphloyer\Pipeline $pipeline
-   * @param int $numberOfEmployees
+   * @param \Emphloyer\Scheduler|null $scheduler
    * @return \Emphloyer\Boss
    */
-  public function __construct(Pipeline $pipeline) {
+  public function __construct(Pipeline $pipeline, Scheduler $scheduler = null) {
     $this->pipeline = $pipeline;
+    $this->scheduler = $scheduler;
   }
 
   /**
@@ -24,6 +26,19 @@ class Boss {
    */
   public function allocateEmployee(Employee $employee) {
     $this->employees[] = $employee;
+  }
+
+  /**
+   * Check the schedule for work to enqueue and push it into the pipeline if needed
+   */
+  public function scheduleWork() {
+    if (is_null($this->scheduler)) {
+      return;
+    }
+
+    foreach ($this->scheduler->getJobsFor(new \DateTime()) as $job) {
+      $this->pipeline->enqueue($job);
+    }
   }
 
   /**

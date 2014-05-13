@@ -31,6 +31,7 @@ class Workshop {
   public function run($keepGoing = true) {
     $this->run = $keepGoing;
     do {
+      $this->boss->scheduleWork();
       $this->boss->delegateWork();
       $this->boss->updateProgress();
     } while($this->run);

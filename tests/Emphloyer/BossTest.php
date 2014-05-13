@@ -7,7 +7,38 @@ class BossTest extends \PHPUnit_Framework_TestCase {
     $this->pipeline = $this->getMockBuilder('Emphloyer\Pipeline')
       ->disableOriginalConstructor()
       ->getMock();
-    $this->boss = new Boss($this->pipeline);
+    $this->scheduler = $this->getMockBuilder('Emphloyer\Scheduler')
+      ->disableOriginalConstructor()
+      ->getMock();
+    $this->boss = new Boss($this->pipeline, $this->scheduler);
+  }
+
+  public function testScheduleWorkDoesNothingWhenThereIsNoScheduler() {
+    $boss = new Boss($this->pipeline);
+    $this->pipeline->expects($this->never())
+      ->method('enqueue');
+
+    $boss->scheduleWork();
+  }
+
+  public function testScheduleWorkEnqueuesJobsReturnedByScheduler() {
+    $job1 = $this->getMock('Emphloyer\Job');
+    $job2 = $this->getMock('Emphloyer\Job');
+    $jobs = array($job1, $job2);
+
+    $this->scheduler->expects($this->once())
+      ->method('getJobsFor')
+      ->will($this->returnValue($jobs));
+
+    $this->pipeline->expects($this->at(0))
+      ->method('enqueue')
+      ->with($job1);
+
+    $this->pipeline->expects($this->at(1))
+      ->method('enqueue')
+      ->with($job2);
+
+    $this->boss->scheduleWork();
   }
 
   public function testGetEmployees() {

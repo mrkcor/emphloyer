@@ -11,7 +11,9 @@ class WorkshopTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testConstructor() {
-    $boss = new Boss($this->getMockBuilder('Emphloyer\Pipeline')->disableOriginalConstructor()->getMock());
+    $pipeline = $this->getMockBuilder('Emphloyer\Pipeline')->disableOriginalConstructor()->getMock();
+    $scheduler = $this->getMockBuilder('Emphloyer\Scheduler')->disableOriginalConstructor()->getMock();
+    $boss = new Boss($pipeline, $scheduler);
     $workshop = new Workshop($boss, array(array('employees' => 2), array('employees' => 1, 'only' => array('special'))));
 
     $employees = $boss->getEmployees();
@@ -35,6 +37,8 @@ class WorkshopTest extends \PHPUnit_Framework_TestCase {
   }
 
   public function testRun() {
+    $this->boss->expects($this->once())
+      ->method('scheduleWork');
     $this->boss->expects($this->once())
       ->method('delegateWork');
     $this->boss->expects($this->exactly(2))

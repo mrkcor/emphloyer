@@ -8,6 +8,7 @@ namespace Emphloyer;
 class Cli {
   protected $lastSignal;
   protected $pipeline;
+  protected $scheduler;
   protected $employees = array();
 
   /**
@@ -17,13 +18,17 @@ class Cli {
     require $filename;
     $this->employees = $employees;
     $this->pipeline = new Pipeline($pipelineBackend);
+
+    if (isset($schedulerBackend)) {
+      $this->scheduler = new Scheduler($schedulerBackend);
+    }
   }
 
   /**
    * Run jobs.
    */
   public function run() {
-    $this->workshop = new Workshop(new Boss($this->pipeline), $this->employees);
+    $this->workshop = new Workshop(new Boss($this->pipeline, $this->scheduler), $this->employees);
     
     declare(ticks = 100);
     pcntl_signal(\SIGINT, array($this, 'handleSignal'));
