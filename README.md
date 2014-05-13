@@ -22,6 +22,9 @@ Before you can start using Emphloyer you need to:
   you can extend the \Emphloyer\AbstractJob if you like. 
 - Hook up Emphloyer with a backend to manage the queueing of jobs.
 
+Additionally you can use Emphloyer to schedule jobs like you would in the
+crontab, to do so you will need to hook up the scheduler with a backend as well.
+
 ### Defining your own jobs
 
 Here's a silly example of a job impementation:
@@ -58,7 +61,7 @@ default, you can use the setType method to set a specific type on an instance
 before you enqueue it or you can override the $type instance variable in your
 class to set another default.
 
-### Hooking up a backend
+### Hooking up a backend 
 
 Emphloyer manages its jobs through its pipeline, in order to feed jobs into the
 pipeline and to get jobs out of it you need to connect a backend to it. You can
@@ -110,6 +113,35 @@ you can use the Pipeline's find method with the job id to load it, depending on
 the backend completed jobs may no longer be stored in which case that method 
 will return null (the Employer-PDO backend will delete completed jobs from the 
 database for example). 
+
+Besides using the pipeline you can also use the scheduler to run specific jobs
+at set intervals like you would in the crontab. To do so you will have to hookup
+the scheduler to a backend in the same configuration file where you setup the
+pipeline like so: 
+
+```php
+// $schedulerBackend defines the scheduler backend to use
+$schedulerBackend = new \Emphloyer\Pdo\SchedulerBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
+```
+
+As with the Pipeline you can either use a backend that someone has built \
+already (such as [Emphloyer-PDO](https://github.com/mkremer/emphloyer-pdo) which
+will soon have a backend for the Scheduler) or implement your own. To build 
+your own backend you must implement the \Emphloyer\Scheduler\Backend interface.
+
+If you have followed along this README and started Emphloyer earlier you will
+have to stop and start it to start using the scheduler.
+
+To schedule jobs you need to instantiate a Scheduler with the appropriate
+backend as is done in the configuration file, you can then schedule jobs by
+passing an instance of said job to the schedule method:
+
+```php
+$schedulerBackend = new \Emphloyer\Pdo\SchedulerBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
+$scheduler = new \Emphloyer\Scheduler($schedulerBackend);
+// Arguments after the job follow the crontab syntax: minute, hour, day of month, month, day of week
+$scheduler->schedule($job, 30, 12); // Schedules the job to be enqueued every day at 12:30
+```
 
 ## Contributing
 
