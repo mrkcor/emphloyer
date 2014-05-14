@@ -1,4 +1,9 @@
-## 0.3.0 (unreleased)
+## 0.3.1 (May 14, 2014)
+
+  - Emphloyer\Pipeline\BackendTestCase modified to be more generically applyable
+    to other types of backends
+
+## 0.3.0 (May 13, 2014)
 
   - BACKWARDS INCOMPATIBLE CHANGE: Backend::enqueue method must accept an
     optional DateTime parameter to indicate from which date and time in the
