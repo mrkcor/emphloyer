@@ -29,39 +29,41 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
     $job->setName('Job 1');
     $job->setType('misc');
 
-    $queuedJob = $this->pipeline->enqueue($job);
-    $this->assertEquals(1, $queuedJob->getId());
-    $this->assertEquals('Job 1', $queuedJob->getName());
-    $this->assertEquals('free', $queuedJob->getStatus());
-    $this->assertEquals('misc', $queuedJob->getType());
+    $queuedJob1 = $this->pipeline->enqueue($job);
+    $this->assertNotNull($queuedJob1->getId());
+    $this->assertEquals('Job 1', $queuedJob1->getName());
+    $this->assertEquals('free', $queuedJob1->getStatus());
+    $this->assertEquals('misc', $queuedJob1->getType());
 
     $job = new BackendTestJob();
     $job->setName('Job 2');
 
-    $queuedJob = $this->pipeline->enqueue($job);
-    $this->assertEquals(2, $queuedJob->getId());
-    $this->assertEquals('Job 2', $queuedJob->getName());
-    $this->assertEquals('free', $queuedJob->getStatus());
-    $this->assertEquals('job', $queuedJob->getType());
+    $queuedJob2 = $this->pipeline->enqueue($job);
+    $this->assertNotNull($queuedJob2->getId());
+    $this->assertNotEquals($queuedJob2->getId(), $queuedJob1);
+    $this->assertEquals('Job 2', $queuedJob2->getName());
+    $this->assertEquals('free', $queuedJob2->getStatus());
+    $this->assertEquals('job', $queuedJob2->getType());
   }
 
   public function testDequeue() {
     $job = new BackendTestJob();
     $job->setName('Job 1');
     $job->setType('misc');
-    $this->pipeline->enqueue($job);
+    $queuedJob1 = $this->pipeline->enqueue($job);
     
+    sleep(1);
     $job = new BackendTestJob();
     $job->setName('Job 2');
-    $this->pipeline->enqueue($job);
+    $queuedJob2 = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
+    $this->assertEquals($queuedJob1->getId(), $job->getId());
     $this->assertEquals('Job 1', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(2, $job->getId());
+    $this->assertEquals($queuedJob2->getId(), $job->getId());
     $this->assertEquals('Job 2', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
 
@@ -72,25 +74,26 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
     $job = new BackendTestJob();
     $job->setName('Job 1');
     $job->setType('type2');
-    $this->pipeline->enqueue($job);
+    $queuedJob1 = $this->pipeline->enqueue($job);
+    sleep(1);
     
     $job = new BackendTestJob();
     $job->setName('Job 2');
-    $this->pipeline->enqueue($job);
+    $queuedJob2 = $this->pipeline->enqueue($job);
 
     $job = new BackendTestJob();
     $job->setName('Job 3');
     $job->setType('type1');
-    $this->pipeline->enqueue($job);
+    $queuedJob3 = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue(array('only' => array('type1', 'type2')));
-    $this->assertEquals(1, $job->getId());
+    $this->assertEquals($queuedJob1->getId(), $job->getId());
     $this->assertEquals('Job 1', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
     $this->assertEquals('type2', $job->getType());
 
     $job = $this->pipeline->dequeue(array('only' => array('type1', 'type2')));
-    $this->assertEquals(3, $job->getId());
+    $this->assertEquals($queuedJob3->getId(), $job->getId());
     $this->assertEquals('Job 3', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
     $this->assertEquals('type1', $job->getType());
@@ -102,25 +105,26 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
     $job = new BackendTestJob();
     $job->setName('Job 1');
     $job->setType('type2');
-    $this->pipeline->enqueue($job);
+    $queuedJob1 = $this->pipeline->enqueue($job);
+    sleep(1);
     
     $job = new BackendTestJob();
     $job->setName('Job 2');
-    $this->pipeline->enqueue($job);
+    $queuedJob2 = $this->pipeline->enqueue($job);
 
     $job = new BackendTestJob();
     $job->setName('Job 3');
     $job->setType('type1');
-    $this->pipeline->enqueue($job);
+    $queuedJob3 = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue(array('exclude' => array('type1')));
-    $this->assertEquals(1, $job->getId());
+    $this->assertEquals($queuedJob1->getId(), $job->getId());
     $this->assertEquals('Job 1', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
     $this->assertEquals('type2', $job->getType());
 
     $job = $this->pipeline->dequeue(array('exclude' => array('type1')));
-    $this->assertEquals(2, $job->getId());
+    $this->assertEquals($queuedJob2->getId(), $job->getId());
     $this->assertEquals('Job 2', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
     $this->assertEquals('job', $job->getType());
@@ -132,14 +136,14 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
     $job = new BackendTestJob();
     $job->setName('Job 1');
     $job->setType('misc');
-    $this->pipeline->enqueue($job, new \DateTime('+2 seconds'));
+    $queuedJob1 = $this->pipeline->enqueue($job, new \DateTime('+2 seconds'));
     
     $job = new BackendTestJob();
     $job->setName('Job 2');
-    $this->pipeline->enqueue($job);
+    $queuedJob2 = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(2, $job->getId());
+    $this->assertEquals($queuedJob2->getId(), $job->getId());
     $this->assertEquals('Job 2', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
 
@@ -148,7 +152,7 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
 
     sleep(1);
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
+    $this->assertEquals($queuedJob1->getId(), $job->getId());
     $this->assertEquals('Job 1', $job->getName());
     $this->assertEquals('locked', $job->getStatus());
 
@@ -166,24 +170,26 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
     $job3->setName('Job 3');
 
     $job1 = $this->pipeline->enqueue($job1);
+    sleep(1);
     $job2 = $this->pipeline->enqueue($job2);
+    sleep(1);
     $job3 = $this->pipeline->enqueue($job3);
 
     $lockedJob = $this->pipeline->dequeue();
     $failedJob = $this->pipeline->dequeue();
     $this->pipeline->fail($failedJob);
 
-    $foundJob = $this->pipeline->find(1);
+    $foundJob = $this->pipeline->find($job1->getId());
     $this->assertEquals($job1->getId(), $foundJob->getId());
     $this->assertEquals('Job 1', $foundJob->getName());
     $this->assertEquals('locked', $foundJob->getStatus());
 
-    $foundJob = $this->pipeline->find(2);
+    $foundJob = $this->pipeline->find($job2->getId());
     $this->assertEquals($job2->getId(), $foundJob->getId());
     $this->assertEquals('Job 2', $foundJob->getName());
     $this->assertEquals('failed', $foundJob->getStatus());
 
-    $foundJob = $this->pipeline->find(3);
+    $foundJob = $this->pipeline->find($job3->getId());
     $this->assertEquals($job3->getId(), $foundJob->getId());
     $this->assertEquals('Job 3', $foundJob->getName());
     $this->assertEquals('free', $foundJob->getStatus());
@@ -208,37 +214,35 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
     $this->pipeline->fail($failedJob);
 
     $this->pipeline->clear();
-    $this->assertNull($this->pipeline->find(1));
-    $this->assertNull($this->pipeline->find(2));
-    $this->assertNull($this->pipeline->find(3));
+    $this->assertNull($this->pipeline->find($job1->getId()));
+    $this->assertNull($this->pipeline->find($job2->getId()));
+    $this->assertNull($this->pipeline->find($job3->getId()));
   }
 
   public function testComplete() {
     $job = new BackendTestJob();
     $job->setName('Job 1');
-    $job = $this->pipeline->enqueue($job);
-    $this->assertEquals(1, $job->getId());
+    $queuedJob = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
-    $this->assertNotNull($this->pipeline->find(1));
+    $this->assertEquals($queuedJob->getId(), $job->getId());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
 
     $this->pipeline->complete($job);
-    $this->assertNull($this->pipeline->find(1));
+    $this->assertNull($this->pipeline->find($queuedJob->getId()));
   }
 
   public function testFail() {
     $job = new BackendTestJob();
     $job->setName('Job 1');
-    $job = $this->pipeline->enqueue($job);
-    $this->assertEquals(1, $job->getId());
+    $queuedJob = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
-    $this->assertNotNull($this->pipeline->find(1));
+    $this->assertEquals($queuedJob->getId(), $job->getId());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
 
     $this->pipeline->fail($job);
-    $job = $this->pipeline->find(1);
+    $job = $this->pipeline->find($queuedJob->getId());
     $this->assertNotNull($job);
     $this->assertEquals('failed', $job->getStatus());
     $this->assertNull($this->pipeline->dequeue());
@@ -247,42 +251,40 @@ class BackendTestCase extends \PHPUnit_Framework_TestCase {
   public function testResetFailedJob() {
     $job = new BackendTestJob();
     $job->setName('Job 1');
-    $job = $this->pipeline->enqueue($job);
-    $this->assertEquals(1, $job->getId());
+    $queuedJob = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
-    $this->assertNotNull($this->pipeline->find(1));
+    $this->assertEquals($queuedJob->getId(), $job->getId());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
 
     $this->pipeline->fail($job);
-    $this->assertEquals('failed', $this->pipeline->find(1)->getStatus());
+    $this->assertEquals('failed', $this->pipeline->find($queuedJob->getId())->getStatus());
     $this->pipeline->reset($job);
-    $this->assertEquals('free', $this->pipeline->find(1)->getStatus());
+    $this->assertEquals('free', $this->pipeline->find($queuedJob->getId())->getStatus());
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
-    $this->assertNotNull($this->pipeline->find(1));
+    $this->assertEquals($queuedJob->getId(), $job->getId());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
   }
 
   public function testResetLockedJob() {
     $job = new BackendTestJob();
     $job->setName('Job 1');
-    $job = $this->pipeline->enqueue($job);
-    $this->assertEquals(1, $job->getId());
+    $queuedJob = $this->pipeline->enqueue($job);
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
-    $this->assertNotNull($this->pipeline->find(1));
-    $this->assertEquals('locked', $this->pipeline->find(1)->getStatus());
+    $this->assertEquals($queuedJob->getId(), $job->getId());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
+    $this->assertEquals('locked', $this->pipeline->find($queuedJob->getId())->getStatus());
 
     $this->assertNull($this->pipeline->dequeue());
     $this->pipeline->reset($job);
-    $this->assertNotNull($this->pipeline->find(1));
-    $this->assertEquals('free', $this->pipeline->find(1)->getStatus());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
+    $this->assertEquals('free', $this->pipeline->find($queuedJob->getId())->getStatus());
 
     $job = $this->pipeline->dequeue();
-    $this->assertEquals(1, $job->getId());
-    $this->assertNotNull($this->pipeline->find(1));
-    $this->assertEquals('locked', $this->pipeline->find(1)->getStatus());
+    $this->assertEquals($queuedJob->getId(), $job->getId());
+    $this->assertNotNull($this->pipeline->find($queuedJob->getId()));
+    $this->assertEquals('locked', $this->pipeline->find($queuedJob->getId())->getStatus());
   }
 }
