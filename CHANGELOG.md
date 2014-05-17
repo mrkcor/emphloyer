@@ -1,3 +1,8 @@
+## 0.4.0 (May 18, 2014)
+
+  - Emphloyer\Scheduler now has allEntries, find and delete method. You can use
+    these to manage the schedule.
+
 ## 0.3.1 (May 14, 2014)
 
   - Emphloyer\Pipeline\BackendTestCase modified to be more generically applyable

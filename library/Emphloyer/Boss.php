@@ -36,6 +36,8 @@ class Boss {
       return;
     }
 
+    $this->scheduler->reconnect();
+
     foreach ($this->scheduler->getJobsFor(new \DateTime()) as $job) {
       $this->pipeline->enqueue($job);
     }

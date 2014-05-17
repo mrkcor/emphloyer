@@ -143,6 +143,11 @@ $scheduler = new \Emphloyer\Scheduler($schedulerBackend);
 $scheduler->schedule($job, 30, 12); // Schedules the job to be enqueued every day at 12:30
 ```
 
+You can get insight into the schedule by using the allEntries method on the
+Scheduler which returns an iterator that returns ScheduleEntry objects. In
+addition to this the delete method can be used to delete a specific entry from
+the schedule.
+
 ## Contributing
 
 1. Fork it

@@ -14,12 +14,18 @@ class Pipeline {
   protected $backend;
 
   /**
+   * @var \Emphloyer\JobSerDes
+   */
+  protected $jobSerDes;
+
+  /**
    * Instantiate a new pipeline.
    * @param \Emphloyer\Pipeline\Backend $backend Pipeline backend.
    * @return \Emphloyer\Pipeline
    */
   public function __construct(\Emphloyer\Pipeline\Backend $backend) {
     $this->backend = $backend;
+    $this->jobSerDes = new \Emphloyer\JobSerDes();
   }
 
   /**
@@ -98,10 +104,7 @@ class Pipeline {
    * @return array
    */
   protected function serializeJob(Job $job) {
-    $attributes = $job->getAttributes();
-    $attributes['className'] = get_class($job);
-    $attributes['type'] = $job->getType();
-    return $attributes;
+    return $this->jobSerDes->serialize($job);
   }
 
   /**
@@ -110,14 +113,6 @@ class Pipeline {
    * @return \Emphloyer\Job
    */
   protected function deserializeJob($attributes) {
-    if (isset($attributes['className'])) {
-      $className = $attributes['className'];
-      $job = new $className();
-      unset($attributes['className']);
-      $job->setType($attributes['type']);
-      unset($attributes['type']);
-      $job->setAttributes($attributes);
-      return $job;
-    }
+    return $this->jobSerDes->deserialize($attributes);
   }
 }

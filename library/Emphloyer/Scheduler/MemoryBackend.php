@@ -21,12 +21,34 @@ class MemoryBackend implements Backend {
     $this->schedule = array();
   }
 
+  public function allEntries() {
+    return new \ArrayIterator($this->schedule);
+  }
+
+  public function find($id) {
+    foreach ($this->schedule as $entry) {
+      if ($entry["id"] == $id) {
+        return $entry;
+      }
+    }
+  }
+
+  public function delete($id) {
+    foreach ($this->schedule as $idx => $entry) {
+      if ($entry["id"] == $id) {
+        unset($this->schedule[$idx]);
+        break;
+      }
+    }
+  }
+
   public function schedule(array $job, $minute = null, $hour = null, $dayOfMonth = null, $month = null, $dayOfWeek = null) {
     $this->nr += 1;
     $id = $this->nr;
     $job['id'] = $id;
-    $this->schedule[] = array("job" => $job, "minute" => $minute, "hour" => $hour, "dayOfMonth" => $dayOfMonth, "month" => $month, "dayOfWeek" => $dayOfWeek, "locked" => null);
-    return $job;
+    $entry = array("id" => $id, "job" => $job, "minute" => $minute, "hour" => $hour, "dayOfMonth" => $dayOfMonth, "month" => $month, "dayOfWeek" => $dayOfWeek, "locked" => null);
+    $this->schedule[] = $entry;
+    return $entry;
   }
 
   public function getJobsFor(\DateTime $dateTime, $lock = true) {

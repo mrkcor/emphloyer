@@ -14,12 +14,24 @@ class Scheduler {
   protected $backend;
 
   /**
+   * @var \Emphloyer\JobSerDes
+   */
+  protected $jobSerDes;
+
+  /**
+   * @var \Emphloyer\Scheduler\ScheduleEntrySerDes
+   */
+  protected $entrySerDes;
+
+  /**
    * Instantiate a new scheduler.
    * @param \Emphloyer\Scheduler\Backend $backend Scheduler backend.
    * @return \Emphloyer\Scheduler
    */
   public function __construct(\Emphloyer\Scheduler\Backend $backend) {
     $this->backend = $backend;
+    $this->jobSerDes = new \Emphloyer\JobSerDes();
+    $this->entrySerDes = new \Emphloyer\Scheduler\ScheduleEntrySerDes($this->jobSerDes);
   }
 
   /**
@@ -37,6 +49,33 @@ class Scheduler {
   }
 
   /**
+   * Find a specific entry in the schedule
+   * @param mixed $id
+   */
+  public function find($id) {
+    $attributes = $this->backend->find($id);
+    if (!is_null($attributes)) {
+      return $this->deserializeEntry($attributes);
+    }
+  }
+
+  /**
+   * Delete a specific entry in the schedule
+   * @param mixed $id
+   */
+  public function delete($id) {
+    $this->backend->delete($id);
+  }
+
+  /**
+   * List the entire schedule.
+   * @return \Emphloyer\Scheduler\ScheduleEntryIterator
+   */
+  public function allEntries() {
+    return new \Emphloyer\Scheduler\ScheduleEntryIterator($this->backend->allEntries());
+  }
+
+  /**
    * Schedule a job.
    * @param array $job Job to schedule
    * @param int $minute Minute to schedule on
@@ -44,11 +83,11 @@ class Scheduler {
    * @param int $dayOfMonth Day of the month to schedule on
    * @param int $month Month to schedule on
    * @param int $dayOfWeek Week day to schedule on
-   * @return \Emphloyer\Job Scheduled job
+   * @return \Emphloyer\Scheduler\ScheduleEntry Scheduled entry
    */
   public function schedule(Job $job, $minute = null, $hour = null, $dayOfMonth = null, $month = null, $dayOfWeek = null) {
     $attributes = $this->backend->schedule($this->serializeJob($job), $minute, $hour, $dayOfMonth, $month, $dayOfWeek);
-    return $this->deserializeJob($attributes);
+    return $this->deserializeEntry($attributes);
   }
 
   /**
@@ -73,9 +112,7 @@ class Scheduler {
    * @return array
    */
   protected function serializeJob(Job $job) {
-    $attributes = $job->getAttributes();
-    $attributes['className'] = get_class($job);
-    return $attributes;
+    return $this->jobSerDes->serialize($job);
   }
 
   /**
@@ -84,12 +121,15 @@ class Scheduler {
    * @return \Emphloyer\Job
    */
   protected function deserializeJob($attributes) {
-    if (isset($attributes['className'])) {
-      $className = $attributes['className'];
-      $job = new $className();
-      unset($attributes['className']);
-      $job->setAttributes($attributes);
-      return $job;
-    }
+    return $this->jobSerDes->deserialize($attributes);
+  }
+
+  /**
+   * Convert a schedule entry in array form to an object
+   * @param array $attributes
+   * @return \Emphloyer\Scheduler\ScheduleEntry
+   */
+  public function deserializeEntry(array $attributes) {
+    return $this->entrySerDes->deserialize($attributes);
   }
 }
