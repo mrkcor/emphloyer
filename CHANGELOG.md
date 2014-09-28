@@ -1,3 +1,9 @@
+## 0.4.1 (September 28, 2014)
+
+  - Fix warning in AbstractJob getId method (for when the id is not set).
+  - Switch to the official Ubuntu 12.04 Vagrant box
+
+
 ## 0.4.0 (May 18, 2014)
 
   - Emphloyer\Scheduler now has allEntries, find and delete method. You can use
@@ -6,7 +12,7 @@
 ## 0.3.1 (May 14, 2014)
 
   - Emphloyer\Pipeline\BackendTestCase modified to be more generically applyable
-    to other types of backends
+    to other types of backends.
 
 ## 0.3.0 (May 13, 2014)
 

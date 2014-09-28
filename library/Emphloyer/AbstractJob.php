@@ -14,7 +14,9 @@ abstract class AbstractJob implements Job {
    * @return mixed
    */
   public function getId() {
-    return $this->attributes['id'];
+    if (isset($this->attributes['id'])) {
+      return $this->attributes['id'];
+    }
   }
 
   /**
