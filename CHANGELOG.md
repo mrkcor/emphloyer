@@ -1,8 +1,12 @@
+## 0.4.2 (November 27, 2014)
+
+  - Adds optional beforeFail and beforeComplete hooks to jobs, this can fore
+    example be used to steer retries.
+
 ## 0.4.1 (September 28, 2014)
 
   - Fix warning in AbstractJob getId method (for when the id is not set).
   - Switch to the official Ubuntu 12.04 Vagrant box
-
 
 ## 0.4.0 (May 18, 2014)
 

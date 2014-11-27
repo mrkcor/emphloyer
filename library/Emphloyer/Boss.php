@@ -96,9 +96,15 @@ class Boss {
       
       switch ($employee->getWorkState()) {
       case Employee::COMPLETE:
+        if (method_exists($job, 'beforeComplete')) {
+          $job->beforeComplete();
+        }
         $this->pipeline->complete($job);
         break;
       case Employee::FAILED:
+        if (method_exists($job, 'beforeFail')) {
+          $job->beforeFail();
+        }
         if ($job->mayTryAgain()) {
           $this->pipeline->reset($job);
         } else {

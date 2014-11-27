@@ -49,11 +49,13 @@ The perform method is what is executed when Emphloyer runs the job, if this
 raises an exception then the job will fail. 
 
 When a job fails the mayTryAgain method determines whether it may be attempted
-again or not. If your backend updates the stored attributes when a job fails 
-and is reset (like the Employer-PDO backend does starting at version 0.1.1) 
-then you could manage whether to retry or not based on a number of attempts. 
-Note that the default implementation in \Emphloyer\AbstractJob simply returns 
-false.
+again or not. You could for example implement retry behaviour by keeping track
+of the number of retries in your job's internal attributes. Note that changing
+the attributes during the perform method will not persist them in the backend
+because the perform method is executed in a forked process and never
+communicated back to the master process, instead implement the beforeFail hook
+in your job instance and have that update the attributes in the job's instance 
+in the master process.
 
 You can control the number of processes for jobs based on their type. When you
 inherit from the \Emphloyer\AbstractJob class the type will be set to 'job' by

@@ -2,6 +2,17 @@
 
 namespace Emphloyer;
 
+class JobWithHooks extends AbstractJob {
+  public function beforeFail() {
+  }
+
+  public function beforeComplete() {
+  }
+
+  public function perform() {
+  }
+}
+
 class BossTest extends \PHPUnit_Framework_TestCase {
   public function setUp() {
     $this->pipeline = $this->getMockBuilder('Emphloyer\Pipeline')
@@ -219,6 +230,36 @@ class BossTest extends \PHPUnit_Framework_TestCase {
     $completedEmployee->expects($this->once())
       ->method('getJob')
       ->will($this->returnValue($completedJob));
+    $completedJob->expects($this->never())
+      ->method('beforeComplete');
+    $this->pipeline->expects($this->once())
+      ->method('complete')
+      ->with($completedJob);
+    $completedEmployee->expects($this->once())
+      ->method('free');
+
+    $this->boss->updateProgress();
+  }
+
+  public function testUpdateProgressWithCompletedEmployeeWithJobThatHasHook() {
+    $completedEmployee = $this->getMock('Emphloyer\Employee');
+    $this->boss->allocateEmployee($completedEmployee);
+
+    $completedEmployee->expects($this->once())
+      ->method('isFree')
+      ->will($this->returnValue(false));
+    $completedEmployee->expects($this->once())
+      ->method('isBusy')
+      ->will($this->returnValue(false));
+    $completedEmployee->expects($this->once())
+      ->method('getWorkState')
+      ->will($this->returnValue(Employee::COMPLETE));
+    $completedJob = $this->getMock('Emphloyer\JobWithHooks');
+    $completedEmployee->expects($this->once())
+      ->method('getJob')
+      ->will($this->returnValue($completedJob));
+    $completedJob->expects($this->once())
+      ->method('beforeComplete');
     $this->pipeline->expects($this->once())
       ->method('complete')
       ->with($completedJob);
@@ -268,12 +309,45 @@ class BossTest extends \PHPUnit_Framework_TestCase {
       ->method('getWorkState')
       ->will($this->returnValue(Employee::FAILED));
     $retryableJob = $this->getMock('Emphloyer\Job');
-    $retryableJob->expects($this->once())
-      ->method('mayTryAgain')
-      ->will($this->returnValue(true));
     $failedEmployeeWithRetryableJob->expects($this->once())
       ->method('getJob')
       ->will($this->returnValue($retryableJob));
+    $retryableJob->expects($this->never())
+      ->method('beforeFail');
+    $retryableJob->expects($this->once())
+      ->method('mayTryAgain')
+      ->will($this->returnValue(true));
+    $this->pipeline->expects($this->once())
+      ->method('reset')
+      ->with($retryableJob);
+    $failedEmployeeWithRetryableJob->expects($this->once())
+      ->method('free');
+
+    $this->boss->updateProgress();
+  }
+
+  public function testUpdateProgressWithFailedJobThatHasOnFailHook() {
+    $failedEmployeeWithRetryableJob = $this->getMock('Emphloyer\Employee');
+    $this->boss->allocateEmployee($failedEmployeeWithRetryableJob);
+
+    $failedEmployeeWithRetryableJob->expects($this->once())
+      ->method('isFree')
+      ->will($this->returnValue(false));
+    $failedEmployeeWithRetryableJob->expects($this->once())
+      ->method('isBusy')
+      ->will($this->returnValue(false));
+    $failedEmployeeWithRetryableJob->expects($this->once())
+      ->method('getWorkState')
+      ->will($this->returnValue(Employee::FAILED));
+    $retryableJob = $this->getMock('Emphloyer\JobWithHooks');
+    $failedEmployeeWithRetryableJob->expects($this->once())
+      ->method('getJob')
+      ->will($this->returnValue($retryableJob));
+    $retryableJob->expects($this->once())
+      ->method('beforeFail');
+    $retryableJob->expects($this->once())
+      ->method('mayTryAgain')
+      ->will($this->returnValue(true));
     $this->pipeline->expects($this->once())
       ->method('reset')
       ->with($retryableJob);
