@@ -31,6 +31,7 @@ class Workshop {
   public function run($keepGoing = true) {
     $this->run = $keepGoing;
     do {
+      pcntl_signal_dispatch();
       $this->boss->scheduleWork();
       $this->boss->delegateWork();
       $this->boss->updateProgress();
