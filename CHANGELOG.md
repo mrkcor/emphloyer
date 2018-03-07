@@ -1,7 +1,3 @@
-## 0.4.3 (February 21, 2018)
-
-  - Call pcntl_signal_dispatch in run loop.
-
 ## 0.4.2 (November 27, 2014)
 
   - Adds optional beforeFail and beforeComplete hooks to jobs, this can fore

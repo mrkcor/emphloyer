@@ -8,18 +8,37 @@ if (!file_exists($path)) {
 
 require_once $path;
 
-$options = getopt("c:", array("clear"));
+$options = getopt('c:e:d', array('clear', 'environment', 'debug'));
 
-if (!isset($options["c"])) {
-  file_put_contents("php://stderr", "You must specify a configuration file with the -c option.");
-  exit(1);
+if (!isset($options['c'])) {
+    file_put_contents('php://stderr', 'You must specify a configuration file with the -c option.');
+    exit(1);
+}
+
+if (!isset($options['e'])) {
+    file_put_contents('php://stderr', 'You must specify a environment with the -e option.');
+    exit(1);
+}
+if (isset($options['d'])) {
+    $options['d'] = true;
+} else {
+    $options['d'] = false;
+}
+
+$kernel = new AppKernel($options['e'], $options['d']);
+$kernel->boot();
+
+if (PHP_MAJOR_VERSION >= 7) {
+    set_error_handler(function ($errno, $errstr) {
+        return strpos($errstr, 'Declaration of') === 0;
+    }, E_WARNING);
 }
 
 $cli = new Emphloyer\Cli();
 $cli->configure($options["c"]);
 
 if (isset($options["clear"])) {
-  $cli->clear();
+    $cli->clear();
 } else {
-  $cli->run();
+    $cli->run();
 }
