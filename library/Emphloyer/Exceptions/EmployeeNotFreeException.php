@@ -2,5 +2,6 @@
 
 namespace Emphloyer\Exceptions;
 
-class EmployeeNotFreeException extends \Exception {
+class EmployeeNotFreeException extends \Exception
+{
 }

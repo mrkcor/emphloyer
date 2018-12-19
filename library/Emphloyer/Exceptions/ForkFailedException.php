@@ -2,5 +2,6 @@
 
 namespace Emphloyer\Exceptions;
 
-class ForkFailedException extends \Exception {
+class ForkFailedException extends \Exception
+{
 }

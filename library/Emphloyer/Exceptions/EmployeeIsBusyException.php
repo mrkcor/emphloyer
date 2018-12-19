@@ -2,5 +2,6 @@
 
 namespace Emphloyer\Exceptions;
 
-class EmployeeIsBusyException extends \Exception {
+class EmployeeIsBusyException extends \Exception
+{
 }
