@@ -19,7 +19,7 @@ class Employee
     /**
      * Instantiate a new Employee.
      * @param array $options Options that influence the behavior of the employee.
-     * @return \Employee\Employee
+     * @return \Emphloyer\Employee
      */
     public function __construct(array $options = array())
     {
@@ -65,6 +65,14 @@ class Employee
                 $job->perform();
                 exit(0);
             } catch (\Throwable $exception) {
+                Logger::getLogger()->error('Uncaught exception in Emphloyer Job.', [
+                    'job_class' => get_class($job),
+                    'job_id' => $job->getId(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_message' => $exception->getMessage(),
+                    'exception_stacktrace' => $exception->getTraceAsString(),
+                    'exception' => $exception
+                ]);
                 exit(1);
             }
         }
