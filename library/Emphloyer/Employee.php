@@ -64,7 +64,7 @@ class Employee
             try {
                 $job->perform();
                 exit(0);
-            } catch (\Exception $exception) {
+            } catch (\Throwable $exception) {
                 exit(1);
             }
         }
