@@ -1,6 +1,10 @@
+## 0.5.1 (December 19, 2018)
+
+  - Set requirement for psr/log to 1.0+ for compatiblity
+
 ## 0.5.0 (December 19, 2018)
 
-  - Employee::work will log catched Throwable to psr/log instance
+  - Employee::work will log caught Throwable to psr/log instance
   - Employee::work now catches Throwable to catch errors as well as exceptions
   - Introduced psr/log, settable in configuration file through Emphloyer\Logger::setLogger
   - Updated to require PHP 7.2 or greater
