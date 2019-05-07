@@ -1,5 +1,6 @@
 /vendor/
 .idea
+.phpcs-cache
 .phpunit.result.cache
 .vagrant
 composer.lock
