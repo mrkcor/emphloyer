@@ -5,18 +5,12 @@ export DEBIAN_FRONTEND=noninteractive
 set -e
 
 apt-get update
-apt-get -y upgrade
+apt-get install -y php php-xml php-mbstring php-zip php-xdebug curl unzip
 
-apt-get install -y php5 curl
+if [ ! -f /usr/local/bin/composer ]; then
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
+    chmod +x /usr/local/bin/composer.phar
+    ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
+fi
 
-curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
-chmod +x /usr/local/bin/composer.phar
-ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
-
-cd /usr/local/bin
-wget https://phar.phpunit.de/phpunit.phar
-chmod +x phpunit.phar
-ln -s phpunit.phar phpunit
-
-cd /vagrant
-composer install
+su -c "cd /vagrant && composer install" vagrant
