@@ -48,13 +48,13 @@ class Employee
     public function work(Job $job)
     {
         if (!$this->isFree()) {
-            throw new Exceptions\EmployeeNotFreeException();
+            throw new Exceptions\EmployeeNotFree();
         }
 
         $this->workPid = pcntl_fork();
 
         if ($this->workPid == -1) {
-            throw new Exceptions\ForkFailedException();
+            throw new Exceptions\ForkFailed();
         }
 
         $this->workState = self::BUSY;
@@ -111,7 +111,7 @@ class Employee
     public function free()
     {
         if ($this->isBusy()) {
-            throw new Exceptions\EmployeeIsBusyException();
+            throw new Exceptions\EmployeeIsBusy();
         }
         $this->job = null;
     }

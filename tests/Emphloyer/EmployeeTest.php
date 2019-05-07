@@ -94,7 +94,7 @@ class EmployeeTest extends TestCase
         try {
             $this->employee->work($this->getCompletingJob());
             $this->fail('Expected an EmployeeNotFreeException');
-        } catch (Exceptions\EmployeeNotFreeException $e) {
+        } catch (Exceptions\EmployeeNotFree $e) {
         }
     }
 
@@ -116,7 +116,7 @@ class EmployeeTest extends TestCase
         try {
             $this->employee->free();
             $this->fail("Shouldn't be able to free a busy employee");
-        } catch (Exceptions\EmployeeIsBusyException $exception) {
+        } catch (Exceptions\EmployeeIsBusy $exception) {
         }
 
         usleep(200000);
@@ -129,7 +129,7 @@ class EmployeeTest extends TestCase
         try {
             $this->employee->free();
             $this->fail("Shouldn't be able to free a busy employee");
-        } catch (Exceptions\EmployeeIsBusyException $exception) {
+        } catch (Exceptions\EmployeeIsBusy $exception) {
         }
 
         usleep(200000);
