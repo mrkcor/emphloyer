@@ -8,7 +8,6 @@ use DateTime;
 use function array_splice;
 use function array_unshift;
 use function in_array;
-use function is_null;
 
 /**
  * MemoryBackend provides you with a backend for the Pipeline that works within PHP's memory.
@@ -33,7 +32,8 @@ class MemoryBackend implements Backend
     /** @inheritDoc */
     public function enqueue(array $attributes, ?DateTime $notBefore = null) : array
     {
-        $this->nr                 += 1;
+        $this->nr += 1;
+
         $id                       = $this->nr;
         $attributes['id']         = $id;
         $attributes['status']     = 'free';
@@ -46,7 +46,6 @@ class MemoryBackend implements Backend
     /** @inheritDoc */
     public function dequeue(array $options = []) : ?array
     {
-        $match = false;
         foreach ($this->queue as $idx => $attributes) {
             if (isset($options['exclude'])) {
                 $match = ! in_array($attributes['type'], $options['exclude']);
@@ -59,7 +58,7 @@ class MemoryBackend implements Backend
             }
 
             if ($match) {
-                $match = is_null($attributes['not_before']) || ($attributes['not_before'] <= new DateTime());
+                $match = $attributes['not_before'] === null || ($attributes['not_before'] <= new DateTime());
             }
 
             if ($match) {
