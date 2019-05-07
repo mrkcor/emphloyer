@@ -4,7 +4,7 @@ namespace Emphloyer;
 
 class EmployeeTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         $this->employee = new Employee();
 

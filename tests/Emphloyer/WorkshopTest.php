@@ -4,7 +4,7 @@ namespace Emphloyer;
 
 class WorkshopTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         $this->boss = $this->getMockBuilder('Emphloyer\Boss')
             ->disableOriginalConstructor()

@@ -19,7 +19,7 @@ class JobWithHooks extends AbstractJob
 
 class BossTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         $this->pipeline = $this->getMockBuilder('Emphloyer\Pipeline')
             ->disableOriginalConstructor()

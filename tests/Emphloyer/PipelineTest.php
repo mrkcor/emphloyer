@@ -24,7 +24,7 @@ class PipelineTestJob extends AbstractJob
 
 class PipelineTest extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         $this->backend = $this->createMock('\Emphloyer\Pipeline\Backend');
         $this->pipeline = new Pipeline($this->backend);
