@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
 
-class SerDesTestJob extends \Emphloyer\AbstractJob
+use PHPUnit\Framework\TestCase;
+
+class SerDesTestJob extends AbstractJob
 {
-    public function setName($name)
+    public function setName($name) : void
     {
         $this->attributes['name'] = $name;
     }
@@ -14,14 +18,14 @@ class SerDesTestJob extends \Emphloyer\AbstractJob
         return $this->attributes['name'];
     }
 
-    public function perform()
+    public function perform() : void
     {
     }
 }
 
-class JobSerDesTest extends \PHPUnit\Framework\TestCase
+class JobSerDesTest extends TestCase
 {
-    public function testSerializeJob()
+    public function testSerializeJob() : void
     {
         $serDes = new JobSerDes();
 
@@ -29,18 +33,18 @@ class JobSerDesTest extends \PHPUnit\Framework\TestCase
         $job->setName('Job 1');
         $job->setType('test');
 
-        $expected = array("name" => "Job 1", "type" => "test", "className" => "Emphloyer\SerDesTestJob");
+        $expected = ['name' => 'Job 1', 'type' => 'test', 'className' => 'Emphloyer\SerDesTestJob'];
         $this->assertEquals($serDes->serialize($job), $expected);
     }
 
-    public function testDeserializeJob()
+    public function testDeserializeJob() : void
     {
-        $serDes = new JobSerDes();
-        $serialized = array("name" => "Job 1", "type" => "test", "className" => "Emphloyer\SerDesTestJob");
+        $serDes     = new JobSerDes();
+        $serialized = ['name' => 'Job 1', 'type' => 'test', 'className' => 'Emphloyer\SerDesTestJob'];
 
         $job = $serDes->deserialize($serialized);
-        $this->assertInstanceOf("Emphloyer\SerDesTestJob", $job);
-        $this->assertEquals("test", $job->getType());
-        $this->assertEquals("Job 1", $job->getName());
+        $this->assertInstanceOf('Emphloyer\SerDesTestJob', $job);
+        $this->assertEquals('test', $job->getType());
+        $this->assertEquals('Job 1', $job->getName());
     }
 }

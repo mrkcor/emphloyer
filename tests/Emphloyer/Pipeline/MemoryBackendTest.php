@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Pipeline;
 
 class MemoryBackendTest extends BackendTestCase
