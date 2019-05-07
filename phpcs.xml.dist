@@ -7,7 +7,8 @@
     <arg name="colors"/>
 
     <!-- Directories to be checked -->
-    <file>library</file>
+    <file>bin</file>
+    <file>src</file>
     <file>tests</file>
 
     <!-- Include full Doctrine Coding Standard -->
