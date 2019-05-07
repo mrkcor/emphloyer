@@ -1,6 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Pipeline;
+
+use DateTime;
+use function array_splice;
+use function array_unshift;
+use function in_array;
+use function is_null;
 
 /**
  * MemoryBackend provides you with a backend for the Pipeline that works within PHP's memory.
@@ -8,133 +16,120 @@ namespace Emphloyer\Pipeline;
  */
 class MemoryBackend implements Backend
 {
+    /** @var int */
     protected $nr = 0;
-    protected $queue = array();
-    protected $locked = array();
-    protected $failed = array();
+    /** @var mixed[] */
+    protected $queue = [];
+    /** @var mixed[] */
+    protected $locked = [];
+    /** @var mixed[] */
+    protected $failed = [];
 
-    /**
-     * Reconnect the backend.
-     */
-    public function reconnect()
+    /** @inheritDoc */
+    public function reconnect() : void
     {
     }
 
-    /**
-     * Push a job onto the pipeline.
-     * @param array $attributes Job attributes to save (must include the class name as 'className'
-     * @param \DateTime|null $notBefore Date and time after which this job may be run
-     * @return array $attributes Updated job attributes, the Pipeline will instantiate a new job instance with these updated attributes (this can be useful to pass a job id or some other attribute of importance back to the caller of this method).
-     */
-    public function enqueue($attributes, \DateTime $notBefore = null)
+    /** @inheritDoc */
+    public function enqueue(array $attributes, ?DateTime $notBefore = null) : array
     {
-        $this->nr += 1;
-        $id = $this->nr;
-        $attributes['id'] = $id;
-        $attributes['status'] = 'free';
+        $this->nr                 += 1;
+        $id                       = $this->nr;
+        $attributes['id']         = $id;
+        $attributes['status']     = 'free';
         $attributes['not_before'] = $notBefore;
-        $this->queue[] = $attributes;
+        $this->queue[]            = $attributes;
+
         return $attributes;
     }
 
-    /**
-     * Get a job from the pipeline and return its attributes.
-     * @param array $options
-     * @return array|null
-     */
-    public function dequeue(array $options = array())
+    /** @inheritDoc */
+    public function dequeue(array $options = []) : ?array
     {
         $match = false;
         foreach ($this->queue as $idx => $attributes) {
-            if (isset($options["exclude"])) {
-                $match = !in_array($attributes["type"], $options["exclude"]);
+            if (isset($options['exclude'])) {
+                $match = ! in_array($attributes['type'], $options['exclude']);
             } else {
-                if (isset($options["only"])) {
-                    $match = in_array($attributes["type"], $options["only"]);
+                if (isset($options['only'])) {
+                    $match = in_array($attributes['type'], $options['only']);
                 } else {
                     $match = true;
                 }
             }
 
             if ($match) {
-                $match = is_null($attributes['not_before']) || ($attributes['not_before'] <= new \DateTime());
+                $match = is_null($attributes['not_before']) || ($attributes['not_before'] <= new DateTime());
             }
 
             if ($match) {
                 array_splice($this->queue, $idx, 1);
                 $attributes['status'] = 'locked';
-                $this->locked[] = $attributes;
+                $this->locked[]       = $attributes;
+
                 return $attributes;
             }
         }
+
+        return null;
     }
 
-    /**
-     * Find a specific job in the pipeline using its id and return its attributes.
-     * @param mixed $id
-     * @return array|null
-     */
-    public function find($id)
+    /** @inheritDoc */
+    public function find($id) : ?array
     {
         foreach ($this->locked as $attributes) {
-            if ($attributes['id'] == $id) {
+            if ($attributes['id'] === $id) {
                 return $attributes;
             }
         }
 
         foreach ($this->failed as $attributes) {
-            if ($attributes['id'] == $id) {
+            if ($attributes['id'] === $id) {
                 return $attributes;
             }
         }
 
         foreach ($this->queue as $attributes) {
-            if ($attributes['id'] == $id) {
+            if ($attributes['id'] === $id) {
                 return $attributes;
             }
         }
 
+        return null;
     }
 
-    /**
-     * Delete all the jobs from the pipeline.
-     */
-    public function clear()
+    /** @inheritDoc */
+    public function clear() : void
     {
-        $this->queue = array();
-        $this->locked = array();
-        $this->failed = array();
+        $this->queue  = [];
+        $this->locked = [];
+        $this->failed = [];
     }
 
-    /**
-     * Mark a job as completed.
-     * @param array $attributes
-     */
-    public function complete($attributes)
+    /** @inheritDoc */
+    public function complete(array $attributes) : void
     {
         foreach ($this->locked as $idx => $job) {
-            if ($job['id'] == $attributes['id']) {
+            if ($job['id'] === $attributes['id']) {
                 unset($this->locked[$idx]);
+
                 return;
             }
         }
     }
 
-    /**
-     * Reset a job so it can be picked up again.
-     * @param array $attributes
-     */
-    public function reset($attributes)
+    /** @inheritDoc */
+    public function reset(array $attributes) : void
     {
         foreach ($this->failed as $idx => $job) {
-            if ($job['id'] == $attributes['id']) {
+            if ($job['id'] === $attributes['id']) {
                 unset($this->failed[$idx]);
                 break;
             }
         }
 
         foreach ($this->locked as $idx => $job) {
-            if ($job['id'] == $attributes['id']) {
+            if ($job['id'] === $attributes['id']) {
                 unset($this->locked[$idx]);
                 break;
             }
@@ -144,20 +139,17 @@ class MemoryBackend implements Backend
         array_unshift($this->queue, $attributes);
     }
 
-    /**
-     * Mark a job as failed.
-     * @param array $attributes
-     */
-    public function fail($attributes)
+    /** @inheritDoc */
+    public function fail(array $attributes) : void
     {
         foreach ($this->locked as $idx => $job) {
-            if ($job['id'] == $attributes['id']) {
+            if ($job['id'] === $attributes['id']) {
                 unset($this->locked[$idx]);
                 break;
             }
         }
 
         $attributes['status'] = 'failed';
-        $this->failed[] = $attributes;
+        $this->failed[]       = $attributes;
     }
 }
