@@ -157,10 +157,10 @@ the schedule.
 
 ## Contributing
 
-#. Fork it
-#. Create your feature branch (`git checkout -b my-new-feature`)
-#. Make your changes, please make sure you adhere to the Doctrine coding standard as much as possible (phpcs configuration is included)
-#. Commit your changes (`git commit -am 'Add some feature'`)
-#. Push to the branch (`git push origin my-new-feature`)
-#. Create a new pull request on GitHub
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Make your changes, please make sure you adhere to the Doctrine coding standard as much as possible (phpcs configuration is included)
+4. Commit your changes (`git commit -am 'Add some feature'`)
+5. Push to the branch (`git push origin my-new-feature`)
+6. Create a new pull request on GitHub
 
