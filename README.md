@@ -30,7 +30,7 @@ crontab, to do so you will need to hook up the scheduler with a backend as well.
 Here's a silly example of a job impementation:
 
 ```php
-use \Emphloyer\AbstractJob
+use Emphloyer\AbstractJob
 
 class NameEchoJob extends AbstractJob 
 {
