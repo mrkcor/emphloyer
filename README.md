@@ -30,12 +30,17 @@ crontab, to do so you will need to hook up the scheduler with a backend as well.
 Here's a silly example of a job impementation:
 
 ```php
-class NameEchoJob extends \Emphloyer\AbstractJob {
-   public function setName($name) {
+use \Emphloyer\AbstractJob
+
+class NameEchoJob extends AbstractJob 
+{
+   public function setName(string $name) : void 
+   {
       $this->attributes['name'] = $name;
    }
 
-   public function perform() {
+   public function perform() : void 
+   {
       echo "Hi, my name is {$this->attributes['name']}.\n";
    }
 }
@@ -77,13 +82,13 @@ configuration file that you reference at runtime, here's an annotated example:
 ```php
 <?php
 // $pipelineBackend defines the pipeline backend to use
-$pipelineBackend = new \Emphloyer\Pdo\PipelineBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
+$pipelineBackend = new \Emphloyer\Pdo\PipelineBackend('mysql:dbname=emphloyer_example;host=localhost', 'user', 'password');
 // $employees determines the number of concurrent jobs, each job is forked off using pcntl_fork. Each entry is used, so if you specify duplicates that will simply add more employees for those types.
-$employees = array(
-   array("exclude" => array("reports"), "employees" => 2), // fork up to two processes for jobs of any type except 'reports'
-   array("only" => array("reports", "stuff"), "employees" => 1), // fork up to one process for jobs of the types 'reports' and 'stuff'
-   array("employees" => 4), // fork up to four processes for jobs of any type
-);
+$employees = [
+   ['exclude' => ['reports'], 'employees' => 2], // fork up to two processes for jobs of any type except 'reports'
+   ['only' => ['reports', 'stuff'], 'employees' => 1], // fork up to one process for jobs of the types 'reports' and 'stuff'
+   ['employees' => 4], // fork up to four processes for jobs of any type
+];
 ```
 
 After setting your configuration file you can have Emphloyer process jobs like 
@@ -98,7 +103,7 @@ the appropriate backend as is done in the configuration file, you can then
 simply enqueue jobs by passing an instance to the enqueue method:
 
 ```php
-$pipelineBackend = new \Emphloyer\Pdo\PipelineBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
+$pipelineBackend = new \Emphloyer\Pdo\PipelineBackend('mysql:dbname=emphloyer_example;host=localhost', 'user', 'password');
 $pipeline = new \Emphloyer\Pipeline($pipelineBackend);
 $queuedJob = $pipeline->enqueue($job);
 ```
@@ -123,7 +128,7 @@ pipeline like so:
 
 ```php
 // $schedulerBackend defines the scheduler backend to use
-$schedulerBackend = new \Emphloyer\Pdo\SchedulerBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
+$schedulerBackend = new \Emphloyer\Pdo\SchedulerBackend('mysql:dbname=emphloyer_example;host=localhost', 'user', 'password');
 ```
 
 As with the Pipeline you can either use a backend that someone has built \
@@ -139,7 +144,7 @@ backend as is done in the configuration file, you can then schedule jobs by
 passing an instance of said job to the schedule method:
 
 ```php
-$schedulerBackend = new \Emphloyer\Pdo\SchedulerBackend("mysql:dbname=emphloyer_example;host=localhost", "user", "password");
+$schedulerBackend = new \Emphloyer\Pdo\SchedulerBackend('mysql:dbname=emphloyer_example;host=localhost', 'user', 'password');
 $scheduler = new \Emphloyer\Scheduler($schedulerBackend);
 // Arguments after the job follow the crontab syntax: minute, hour, day of month, month, day of week
 $scheduler->schedule($job, 30, 12); // Schedules the job to be enqueued every day at 12:30
@@ -152,9 +157,10 @@ the schedule.
 
 ## Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+#. Fork it
+#. Create your feature branch (`git checkout -b my-new-feature`)
+#. Make your changes, please make sure you adhere to the Doctrine coding standard as much as possible (phpcs configuration is included)
+#. Commit your changes (`git commit -am 'Add some feature'`)
+#. Push to the branch (`git push origin my-new-feature`)
+#. Create a new pull request on GitHub
 
