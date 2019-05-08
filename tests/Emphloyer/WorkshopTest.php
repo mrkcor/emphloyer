@@ -1,24 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
 
-class WorkshopTest extends \PHPUnit\Framework\TestCase
+use PHPUnit\Framework\TestCase;
+use function count;
+
+class WorkshopTest extends TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
-        $this->boss = $this->getMockBuilder('Emphloyer\Boss')
+        $this->boss     = $this->getMockBuilder('Emphloyer\Boss')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->workshop = new Workshop($this->boss, array(array('employees' => 2)));
+        $this->workshop = new Workshop($this->boss, [['employees' => 2]]);
     }
 
-    public function testConstructor()
+    public function testConstructor() : void
     {
-        $pipeline = $this->getMockBuilder('Emphloyer\Pipeline')->disableOriginalConstructor()->getMock();
+        $pipeline  = $this->getMockBuilder('Emphloyer\Pipeline')->disableOriginalConstructor()->getMock();
         $scheduler = $this->getMockBuilder('Emphloyer\Scheduler')->disableOriginalConstructor()->getMock();
-        $boss = new Boss($pipeline, $scheduler);
-        $workshop = new Workshop($boss,
-            array(array('employees' => 2), array('employees' => 1, 'only' => array('special'))));
+        $boss      = new Boss($pipeline, $scheduler);
+        $workshop  = new Workshop(
+            $boss,
+            [['employees' => 2], ['employees' => 1, 'only' => ['special']]]
+        );
 
         $employees = $boss->getEmployees();
         $this->assertEquals(3, count($employees));
@@ -29,7 +36,7 @@ class WorkshopTest extends \PHPUnit\Framework\TestCase
             $this->assertInstanceOf('Emphloyer\Employee', $employee);
             $options = $employee->getOptions();
             if (isset($options['only'])) {
-                $this->assertEquals(array('employees' => 1, 'only' => array('special')), $options);
+                $this->assertEquals(['employees' => 1, 'only' => ['special']], $options);
                 $countSpecial += 1;
             } else {
                 $countRegular += 1;
@@ -40,7 +47,7 @@ class WorkshopTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(2, $countRegular);
     }
 
-    public function testRun()
+    public function testRun() : void
     {
         $this->boss->expects($this->once())
             ->method('scheduleWork');
@@ -54,7 +61,7 @@ class WorkshopTest extends \PHPUnit\Framework\TestCase
         $this->workshop->run(false);
     }
 
-    public function testStopNow()
+    public function testStopNow() : void
     {
         $this->boss->expects($this->once())
             ->method('stopEmployees');

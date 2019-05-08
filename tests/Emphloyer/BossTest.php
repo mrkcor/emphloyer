@@ -1,36 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
+
+use PHPUnit\Framework\TestCase;
+use function count;
 
 class JobWithHooks extends AbstractJob
 {
-    public function beforeFail()
+    public function beforeFail() : void
     {
     }
 
-    public function beforeComplete()
+    public function beforeComplete() : void
     {
     }
 
-    public function perform()
+    public function perform() : void
     {
     }
 }
 
-class BossTest extends \PHPUnit\Framework\TestCase
+class BossTest extends TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
-        $this->pipeline = $this->getMockBuilder('Emphloyer\Pipeline')
+        $this->pipeline  = $this->getMockBuilder('Emphloyer\Pipeline')
             ->disableOriginalConstructor()
             ->getMock();
         $this->scheduler = $this->getMockBuilder('Emphloyer\Scheduler')
             ->disableOriginalConstructor()
             ->getMock();
-        $this->boss = new Boss($this->pipeline, $this->scheduler);
+        $this->boss      = new Boss($this->pipeline, $this->scheduler);
     }
 
-    public function testScheduleWorkDoesNothingWhenThereIsNoScheduler()
+    public function testScheduleWorkDoesNothingWhenThereIsNoScheduler() : void
     {
         $boss = new Boss($this->pipeline);
         $this->pipeline->expects($this->never())
@@ -39,11 +44,11 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $boss->scheduleWork();
     }
 
-    public function testScheduleWorkEnqueuesJobsReturnedByScheduler()
+    public function testScheduleWorkEnqueuesJobsReturnedByScheduler() : void
     {
         $job1 = $this->createMock('Emphloyer\Job');
         $job2 = $this->createMock('Emphloyer\Job');
-        $jobs = array($job1, $job2);
+        $jobs = [$job1, $job2];
 
         $this->scheduler->expects($this->once())
             ->method('getJobsFor')
@@ -60,7 +65,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->scheduleWork();
     }
 
-    public function testGetEmployees()
+    public function testGetEmployees() : void
     {
         $this->boss->allocateEmployee(new Employee());
         $this->boss->allocateEmployee(new Employee());
@@ -72,11 +77,11 @@ class BossTest extends \PHPUnit\Framework\TestCase
         }
     }
 
-    public function testGetWorkReturnsJobFromPipeline()
+    public function testGetWorkReturnsJobFromPipeline() : void
     {
-        $options = array('only' => array('special'));
+        $options  = ['only' => ['special']];
         $employee = new Employee($options);
-        $job = $this->createMock('Emphloyer\Job');
+        $job      = $this->createMock('Emphloyer\Job');
         $this->pipeline->expects($this->once())
             ->method('dequeue')
             ->with($options)
@@ -84,17 +89,17 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($job, $this->boss->getWork($employee));
     }
 
-    public function testGetWorkReturnsNullWhenThereIsNoWork()
+    public function testGetWorkReturnsNullWhenThereIsNoWork() : void
     {
         $employee = new Employee();
         $this->pipeline->expects($this->once())
             ->method('dequeue')
-            ->with(array())
+            ->with([])
             ->will($this->returnValue(null));
         $this->assertNull($this->boss->getWork($employee));
     }
 
-    public function testDelegateWorkDelegatesToAvailableEmployees()
+    public function testDelegateWorkDelegatesToAvailableEmployees() : void
     {
         $employee1 = $this->createMock('Emphloyer\Employee');
         $employee2 = $this->createMock('Emphloyer\Employee');
@@ -112,14 +117,14 @@ class BossTest extends \PHPUnit\Framework\TestCase
             ->will($this->returnValue(true));
         $employee2->expects($this->any())
             ->method('getOptions')
-            ->will($this->returnValue(array('only' => array('special'))));
+            ->will($this->returnValue(['only' => ['special']]));
         $employee2->expects($this->once())
             ->method('work')
             ->with($job);
 
         $this->pipeline->expects($this->once())
             ->method('dequeue')
-            ->with(array('only' => array('special')))
+            ->with(['only' => ['special']])
             ->will($this->returnValue($job));
 
         $this->pipeline->expects($this->once())
@@ -128,7 +133,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->delegateWork();
     }
 
-    public function testDelegateWorkDoesNothingWhenNoEmployeeAvailable()
+    public function testDelegateWorkDoesNothingWhenNoEmployeeAvailable() : void
     {
         $employee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($employee);
@@ -142,7 +147,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->delegateWork();
     }
 
-    public function testDelegateWorkDoesNothingWhenNoJobAvailable()
+    public function testDelegateWorkDoesNothingWhenNoJobAvailable() : void
     {
         $employee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($employee);
@@ -153,11 +158,11 @@ class BossTest extends \PHPUnit\Framework\TestCase
 
         $employee->expects($this->any())
             ->method('getOptions')
-            ->will($this->returnValue(array()));
+            ->will($this->returnValue([]));
 
         $this->pipeline->expects($this->once())
             ->method('dequeue')
-            ->with(array())
+            ->with([])
             ->will($this->returnValue(null));
 
         $employee->expects($this->never())
@@ -166,7 +171,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->delegateWork();
     }
 
-    public function testWaitOnEmployees()
+    public function testWaitOnEmployees() : void
     {
         $employee1 = $this->createMock('Emphloyer\Employee');
         $employee2 = $this->createMock('Emphloyer\Employee');
@@ -187,7 +192,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->waitOnEmployees();
     }
 
-    public function testStopEmployees()
+    public function testStopEmployees() : void
     {
         $employee1 = $this->createMock('Emphloyer\Employee');
         $employee2 = $this->createMock('Emphloyer\Employee');
@@ -207,7 +212,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->stopEmployees();
     }
 
-    public function testUpdateProgressWithFreeEmployee()
+    public function testUpdateProgressWithFreeEmployee() : void
     {
         $freeEmployee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($freeEmployee);
@@ -219,7 +224,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->updateProgress();
     }
 
-    public function testUpdateProgressWithBusyEmployee()
+    public function testUpdateProgressWithBusyEmployee() : void
     {
         $busyEmployee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($busyEmployee);
@@ -231,7 +236,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->updateProgress();
     }
 
-    public function testUpdateProgressWithCompletedEmployee()
+    public function testUpdateProgressWithCompletedEmployee() : void
     {
         $completedEmployee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($completedEmployee);
@@ -258,7 +263,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->updateProgress();
     }
 
-    public function testUpdateProgressWithCompletedEmployeeWithJobThatHasHook()
+    public function testUpdateProgressWithCompletedEmployeeWithJobThatHasHook() : void
     {
         $completedEmployee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($completedEmployee);
@@ -287,7 +292,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->updateProgress();
     }
 
-    public function testUpdateProgressWithFailedJobThatMayNotBeRetried()
+    public function testUpdateProgressWithFailedJobThatMayNotBeRetried() : void
     {
         $failedEmployee = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($failedEmployee);
@@ -314,7 +319,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->updateProgress();
     }
 
-    public function testUpdateProgressWithFailedJobThatMayBeRetried()
+    public function testUpdateProgressWithFailedJobThatMayBeRetried() : void
     {
         $failedEmployeeWithRetryableJob = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($failedEmployeeWithRetryableJob);
@@ -344,7 +349,7 @@ class BossTest extends \PHPUnit\Framework\TestCase
         $this->boss->updateProgress();
     }
 
-    public function testUpdateProgressWithFailedJobThatHasOnFailHook()
+    public function testUpdateProgressWithFailedJobThatHasOnFailHook() : void
     {
         $failedEmployeeWithRetryableJob = $this->createMock('Emphloyer\Employee');
         $this->boss->allocateEmployee($failedEmployeeWithRetryableJob);

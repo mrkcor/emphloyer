@@ -1,14 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
 
-class EmployeeTest extends \PHPUnit\Framework\TestCase
+use Exception;
+use InvalidArgumentException;
+use PHPUnit\Framework\TestCase;
+use function escapeshellarg;
+use function is_dir;
+use function mkdir;
+use function posix_kill;
+use function system;
+use function usleep;
+
+class EmployeeTest extends TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         $this->employee = new Employee();
 
-        $this->tempPath = __DIR__ . "/_files/tmp";
+        $this->tempPath = __DIR__ . '/_files/tmp';
 
         if (is_dir($this->tempPath)) {
             system('rm -rf ' . escapeshellarg($this->tempPath));
@@ -17,55 +29,55 @@ class EmployeeTest extends \PHPUnit\Framework\TestCase
         mkdir($this->tempPath);
     }
 
-    public function testValidOptions()
+    public function testValidOptions() : void
     {
-        $options = array('only' => array('special'));
+        $options  = ['only' => ['special']];
         $employee = new Employee($options);
         $this->assertEquals($options, $employee->getOptions());
 
-        $options = array('exclude' => array('special'));
+        $options  = ['exclude' => ['special']];
         $employee = new Employee($options);
         $this->assertEquals($options, $employee->getOptions());
     }
 
-    public function testInvalidOptionsThrowsException()
+    public function testInvalidOptionsThrowsException() : void
     {
-        $invalids = array(
-            array('only' => 'special'),
-            array('exclude' => 'special'),
-        );
+        $invalids = [
+            ['only' => 'special'],
+            ['exclude' => 'special'],
+        ];
 
         $fails = 0;
         foreach ($invalids as $options) {
             try {
                 $employee = new Employee($options);
-                $this->fail("InvalidArgumentException was expected.");
-            } catch (\InvalidArgumentException $e) {
+                $this->fail('InvalidArgumentException was expected.');
+            } catch (InvalidArgumentException $e) {
                 ++$fails;
             }
         }
         $this->assertEquals(2, $fails);
     }
 
-    public function shortSleep()
+    public function shortSleep() : void
     {
         usleep(100000);
     }
 
-    public function shortSleepAndFail()
+    public function shortSleepAndFail() : void
     {
         usleep(100000);
-        throw new \Exception();
+        throw new Exception();
     }
 
-    public function testIsFree()
+    public function testIsFree() : void
     {
         $this->assertTrue($this->employee->isFree());
         $this->employee->work($this->createMock('Emphloyer\Job'));
         $this->assertFalse($this->employee->isFree());
     }
 
-    public function testGetJob()
+    public function testGetJob() : void
     {
         $this->assertNull($this->employee->getJob());
 
@@ -74,28 +86,29 @@ class EmployeeTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($job, $this->employee->getJob());
     }
 
-    public function testRejectsJobWhileItIsNotFree()
+    public function testRejectsJobWhileItIsNotFree() : void
     {
         $this->employee->work($this->getCompletingJob());
         $this->assertFalse($this->employee->isFree());
 
         try {
             $this->employee->work($this->getCompletingJob());
-            $this->fail("Expected an EmployeeNotFreeException");
-        } catch (Exceptions\EmployeeNotFreeException $e) {
+            $this->fail('Expected an EmployeeNotFreeException');
+        } catch (Exceptions\EmployeeNotFree $e) {
         }
     }
 
-    public function getCompletingJob()
+    public function getCompletingJob() : Job
     {
         $job = $this->createMock('Emphloyer\Job');
         $job->expects($this->any())
             ->method('perform')
-            ->will($this->returnCallback(array($this, 'shortSleep')));
+            ->will($this->returnCallback([$this, 'shortSleep']));
+
         return $job;
     }
 
-    public function testCannotBeFreedUntilJobIsCompletedOrFailed()
+    public function testCannotBeFreedUntilJobIsCompletedOrFailed() : void
     {
         $this->employee->work($this->getCompletingJob());
         $this->assertFalse($this->employee->isFree());
@@ -103,7 +116,7 @@ class EmployeeTest extends \PHPUnit\Framework\TestCase
         try {
             $this->employee->free();
             $this->fail("Shouldn't be able to free a busy employee");
-        } catch (Exceptions\EmployeeIsBusyException $exception) {
+        } catch (Exceptions\EmployeeIsBusy $exception) {
         }
 
         usleep(200000);
@@ -116,7 +129,7 @@ class EmployeeTest extends \PHPUnit\Framework\TestCase
         try {
             $this->employee->free();
             $this->fail("Shouldn't be able to free a busy employee");
-        } catch (Exceptions\EmployeeIsBusyException $exception) {
+        } catch (Exceptions\EmployeeIsBusy $exception) {
         }
 
         usleep(200000);
@@ -124,16 +137,17 @@ class EmployeeTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($this->employee->isFree());
     }
 
-    public function getFailingJob()
+    public function getFailingJob() : Job
     {
         $job = $this->createMock('Emphloyer\Job');
         $job->expects($this->any())
             ->method('perform')
-            ->will($this->returnCallback(array($this, 'shortSleepAndFail')));
+            ->will($this->returnCallback([$this, 'shortSleepAndFail']));
+
         return $job;
     }
 
-    public function testReportsWorkState()
+    public function testReportsWorkState() : void
     {
         $this->employee->work($this->getCompletingJob());
         $this->assertEquals(Employee::BUSY, $this->employee->getWorkState());
@@ -147,14 +161,14 @@ class EmployeeTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals(Employee::FAILED, $this->employee->getWorkState());
     }
 
-    public function testReportWorkStateAndWaitForCompletion()
+    public function testReportWorkStateAndWaitForCompletion() : void
     {
         $this->employee->work($this->getCompletingJob());
         $this->assertEquals(Employee::BUSY, $this->employee->getWorkState());
         $this->assertEquals(Employee::COMPLETE, $this->employee->getWorkState(true));
     }
 
-    public function testStopEmployee()
+    public function testStopEmployee() : void
     {
         $this->employee->work($this->getCompletingJob());
         $this->assertTrue($this->employee->isBusy());

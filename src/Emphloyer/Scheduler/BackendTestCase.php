@@ -14,14 +14,14 @@ class BackendTestJob extends \Emphloyer\AbstractJob
         return $this->attributes['name'];
     }
 
-    public function perform()
+    public function perform() : void
     {
     }
 }
 
 class BackendTestCase extends \PHPUnit\Framework\TestCase
 {
-    public function setUp()
+    public function setUp() : void
     {
         $this->scheduler = new \Emphloyer\Scheduler($this->backend);
         $this->scheduler->clear();
