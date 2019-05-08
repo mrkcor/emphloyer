@@ -1,32 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
+
+use DateTime;
+use function method_exists;
+use function usleep;
 
 /**
  * The Boss class is responsible for processing the work from a Pipeline with a pool of Employee instances.
  */
 class Boss
 {
+    /** @var Pipeline */
     protected $pipeline;
+    /** @var Scheduler|null */
     protected $scheduler;
-    protected $employees = array();
+    /** @var Employee[] */
+    protected $employees = [];
 
-    /**
-     * @param \Emphloyer\Pipeline $pipeline
-     * @param \Emphloyer\Scheduler|null $scheduler
-     * @return \Emphloyer\Boss
-     */
-    public function __construct(Pipeline $pipeline, Scheduler $scheduler = null)
+    public function __construct(Pipeline $pipeline, ?Scheduler $scheduler = null)
     {
-        $this->pipeline = $pipeline;
+        $this->pipeline  = $pipeline;
         $this->scheduler = $scheduler;
     }
 
     /**
      * Allocate an employee
-     * @param \Emphloyer\Employee
      */
-    public function allocateEmployee(Employee $employee)
+    public function allocateEmployee(Employee $employee) : void
     {
         $this->employees[] = $employee;
     }
@@ -34,15 +37,15 @@ class Boss
     /**
      * Check the schedule for work to enqueue and push it into the pipeline if needed
      */
-    public function scheduleWork()
+    public function scheduleWork() : void
     {
-        if (is_null($this->scheduler)) {
+        if ($this->scheduler === null) {
             return;
         }
 
         $this->scheduler->reconnect();
 
-        foreach ($this->scheduler->getJobsFor(new \DateTime()) as $job) {
+        foreach ($this->scheduler->getJobsFor(new DateTime()) as $job) {
             $this->pipeline->enqueue($job);
         }
     }
@@ -50,27 +53,30 @@ class Boss
     /**
      * Cycle through all available employees and allocate work when it is available.
      */
-    public function delegateWork()
+    public function delegateWork() : void
     {
         foreach ($this->employees as $employee) {
-            if ($employee->isFree()) {
-                if ($job = $this->getWork($employee)) {
-                    $employee->work($job);
-                    $this->pipeline->reconnect();
-                }
+            if (! $employee->isFree()) {
+                continue;
             }
+
+            $job = $this->getWork($employee);
+            if (! $job) {
+                continue;
+            }
+
+            $employee->work($job);
+            $this->pipeline->reconnect();
         }
     }
 
     /**
      * Obtain a job from the pipeline for the given Employee.
-     * @return \Emphloyer\Job|null
      */
-    public function getWork(Employee $employee)
+    public function getWork(Employee $employee) : ?Job
     {
         $job = $this->pipeline->dequeue($employee->getOptions());
-
-        if (is_null($job)) {
+        if ($job === null) {
             usleep(10000);
         }
 
@@ -80,31 +86,35 @@ class Boss
     /**
      * Wait for all busy employees to finish.
      */
-    public function waitOnEmployees()
+    public function waitOnEmployees() : void
     {
         foreach ($this->employees as $employee) {
-            if ($employee->isBusy()) {
-                $employee->getWorkState(true);
+            if (! $employee->isBusy()) {
+                continue;
             }
+
+            $employee->getWorkState(true);
         }
     }
 
     /**
      * Stop all busy employees.
      */
-    public function stopEmployees()
+    public function stopEmployees() : void
     {
         foreach ($this->employees as $employee) {
-            if ($employee->isBusy()) {
-                $employee->stop();
+            if (! $employee->isBusy()) {
+                continue;
             }
+
+            $employee->stop();
         }
     }
 
     /**
      * Get a progress update from all employees.
      */
-    public function updateProgress()
+    public function updateProgress() : void
     {
         foreach ($this->employees as $employee) {
             if ($employee->isBusy()) {
@@ -142,9 +152,10 @@ class Boss
 
     /**
      * Get the allocated employees
-     * @return array
+     *
+     * @return Employee[]
      */
-    public function getEmployees()
+    public function getEmployees() : array
     {
         return $this->employees;
     }

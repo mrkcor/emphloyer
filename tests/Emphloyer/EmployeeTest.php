@@ -98,7 +98,7 @@ class EmployeeTest extends TestCase
         }
     }
 
-    public function getCompletingJob()
+    public function getCompletingJob() : Job
     {
         $job = $this->createMock('Emphloyer\Job');
         $job->expects($this->any())
@@ -137,7 +137,7 @@ class EmployeeTest extends TestCase
         $this->assertTrue($this->employee->isFree());
     }
 
-    public function getFailingJob()
+    public function getFailingJob() : Job
     {
         $job = $this->createMock('Emphloyer\Job');
         $job->expects($this->any())

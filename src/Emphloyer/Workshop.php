@@ -1,26 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
+
+use function pcntl_signal_dispatch;
 
 /**
  * The Workshop class runs the show.
  */
 class Workshop
 {
+    /** @var Boss */
     protected $boss;
+    /** @var bool */
     protected $run = false;
 
     /**
-     * @param \Emphloyer\Boss $boss
-     * @param array $employees
-     * @return \Emphloyer\Workshop
+     * @param Employee[] $employees
      */
-    public function __construct(Boss $boss, array $employees = array())
+    public function __construct(Boss $boss, array $employees = [])
     {
         $this->boss = $boss;
 
         foreach ($employees as $options) {
-            for ($i = 0; $i < $options["employees"]; $i++) {
+            for ($i = 0; $i < $options['employees']; $i++) {
                 $this->boss->allocateEmployee(new Employee($options));
             }
         }
@@ -28,9 +32,10 @@ class Workshop
 
     /**
      * Run the process.
+     *
      * @param bool $keepGoing Keep running or stop after one cycle.
      */
-    public function run($keepGoing = true)
+    public function run(bool $keepGoing = true) : void
     {
         $this->run = $keepGoing;
         do {
@@ -47,7 +52,7 @@ class Workshop
     /**
      * Stop the process, this waits for all running jobs to end.
      */
-    public function stop()
+    public function stop() : void
     {
         $this->run = false;
     }
@@ -55,7 +60,7 @@ class Workshop
     /**
      * Stop the process immediately, this kills jobs mid-process.
      */
-    public function stopNow()
+    public function stopNow() : void
     {
         $this->run = false;
         $this->boss->stopEmployees();

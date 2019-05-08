@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
+
+use DateTime;
+use Emphloyer\Pipeline\Backend;
 
 /**
  * A Pipeline holds jobs to be done. A backend that implements the
@@ -9,121 +14,121 @@ namespace Emphloyer;
  */
 class Pipeline
 {
-    /**
-     * @var \Emphloyer\Pipeline\Backend
-     */
+    /** @var Backend */
     protected $backend;
-
-    /**
-     * @var \Emphloyer\JobSerDes
-     */
+    /** @var JobSerDes */
     protected $jobSerDes;
 
     /**
      * Instantiate a new pipeline.
-     * @param \Emphloyer\Pipeline\Backend $backend Pipeline backend.
-     * @return \Emphloyer\Pipeline
+     *
+     * @param Backend $backend Pipeline backend.
      */
-    public function __construct(\Emphloyer\Pipeline\Backend $backend)
+    public function __construct(Backend $backend)
     {
-        $this->backend = $backend;
-        $this->jobSerDes = new \Emphloyer\JobSerDes();
+        $this->backend   = $backend;
+        $this->jobSerDes = new JobSerDes();
     }
 
     /**
      * Reconnect the backend if required.
      */
-    public function reconnect()
+    public function reconnect() : void
     {
         $this->backend->reconnect();
     }
 
     /**
      * Push a job onto the pipeline.
-     * @param \Emphloyer\Job $job Job to enqueue
-     * @param \DateTime|null $notBefore Date and time after which this job may be run
-     * @return \Emphloyer\Job
+     *
+     * @param Job           $job       Job to enqueue
+     * @param DateTime|null $notBefore Date and time after which this job may be run
      */
-    public function enqueue(Job $job, \DateTime $notBefore = null)
+    public function enqueue(Job $job, ?DateTime $notBefore = null) : Job
     {
         $attributes = $this->backend->enqueue($this->serializeJob($job), $notBefore);
+
         return $this->deserializeJob($attributes);
     }
 
     /**
      * Convert a job into an array that can be passed on to a backend.
-     * @param \Emphloyer\Job $job
-     * @return array
+     *
+     * @return mixed[]
      */
-    protected function serializeJob(Job $job)
+    protected function serializeJob(Job $job) : array
     {
         return $this->jobSerDes->serialize($job);
     }
 
     /**
      * Convert an array provided by a backend into a Job instance.
-     * @param array $attributes
-     * @return \Emphloyer\Job
+     *
+     * @param mixed[] $attributes
      */
-    protected function deserializeJob($attributes)
+    protected function deserializeJob(array $attributes) : Job
     {
         return $this->jobSerDes->deserialize($attributes);
     }
 
     /**
      * Get a job from the pipeline.
-     * @param array $options
-     * @return \Emphloyer\Job|null
+     *
+     * @param mixed[] $options
      */
-    public function dequeue(array $options = array())
+    public function dequeue(array $options = []) : ?Job
     {
-        if ($attributes = $this->backend->dequeue($options)) {
+        $attributes = $this->backend->dequeue($options);
+        if ($attributes) {
             return $this->deserializeJob($attributes);
         }
+
+        return null;
     }
 
     /**
      * Find a specific job in the pipeline by its id.
-     * @return \Emphloyer\Job|null
+     *
+     * @param mixed $id
      */
-    public function find($id)
+    public function find($id) : ?Job
     {
-        if ($attributes = $this->backend->find($id)) {
+        $attributes = $this->backend->find($id);
+        if ($attributes) {
             return $this->deserializeJob($attributes);
         }
+
+        return null;
     }
 
     /**
      * Delete all the jobs from the pipeline.
      */
-    public function clear()
+    public function clear() : void
     {
         $this->backend->clear();
     }
 
     /**
      * Mark a job as completed.
-     * @param \Emphloyer\Job $job
      */
-    public function complete(Job $job)
+    public function complete(Job $job) : void
     {
         $this->backend->complete($this->serializeJob($job));
     }
 
     /**
      * Reset a job so it can be picked up again.
-     * @param \Emphloyer\Job $job
      */
-    public function reset(Job $job)
+    public function reset(Job $job) : void
     {
         $this->backend->reset($this->serializeJob($job));
     }
 
     /**
      * Mark a job as failed.
-     * @param \Emphloyer\Job $job
      */
-    public function fail(Job $job)
+    public function fail(Job $job) : void
     {
         $this->backend->fail($this->serializeJob($job));
     }

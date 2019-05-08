@@ -8,17 +8,15 @@ use PHPUnit\Framework\TestCase;
 
 class PipelineTestJob extends AbstractJob
 {
-    public function __construct($name = '', $again = false)
+    public function __construct(string $name = '', bool $again = false)
     {
         $this->attributes['name']      = $name;
         $this->attributes['try_again'] = $again;
     }
 
-    public function mayTryAgain()
+    public function mayTryAgain() : bool
     {
-        if ($this->attributes['try_again'] === true) {
-            return true;
-        }
+        return $this->attributes['try_again'] === true;
     }
 
     public function perform() : void
@@ -46,19 +44,27 @@ class PipelineTest extends TestCase
         $job = new PipelineTestJob('Mark');
         $this->backend->expects($this->once())
             ->method('enqueue')
-            ->with($this->equalTo([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Mark',
-                'try_again' => false,
-                'type' => 'job',
-            ]))
-            ->will($this->returnValue([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Mark',
-                'try_again' => false,
-                'id' => 1,
-                'type' => 'job',
-            ]));
+            ->with(
+                $this->equalTo(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Mark',
+                        'try_again' => false,
+                        'type' => 'job',
+                    ]
+                )
+            )
+            ->will(
+                $this->returnValue(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Mark',
+                        'try_again' => false,
+                        'id' => 1,
+                        'type' => 'job',
+                    ]
+                )
+            );
 
         $savedJob = $this->pipeline->enqueue($job);
         $this->assertInstanceOf('Emphloyer\PipelineTestJob', $savedJob);
@@ -70,13 +76,17 @@ class PipelineTest extends TestCase
         $this->backend->expects($this->once())
             ->method('find')
             ->with(2)
-            ->will($this->returnValue([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Kremer',
-                'try_again' => false,
-                'id' => 2,
-                'type' => 'special',
-            ]));
+            ->will(
+                $this->returnValue(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Kremer',
+                        'try_again' => false,
+                        'id' => 2,
+                        'type' => 'special',
+                    ]
+                )
+            );
         $job = $this->pipeline->find(2);
         $this->assertInstanceOf('Emphloyer\PipelineTestJob', $job);
         $this->assertEquals(['name' => 'Kremer', 'try_again' => false, 'id' => 2], $job->getAttributes());
@@ -97,12 +107,16 @@ class PipelineTest extends TestCase
     {
         $this->backend->expects($this->once())
             ->method('dequeue')
-            ->will($this->returnValue([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Mark',
-                'try_again' => false,
-                'type' => 'x',
-            ]));
+            ->will(
+                $this->returnValue(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Mark',
+                        'try_again' => false,
+                        'type' => 'x',
+                    ]
+                )
+            );
         $job = $this->pipeline->dequeue();
         $this->assertInstanceOf('Emphloyer\PipelineTestJob', $job);
         $this->assertEquals(['name' => 'Mark', 'try_again' => false], $job->getAttributes());
@@ -123,12 +137,16 @@ class PipelineTest extends TestCase
         $job = new PipelineTestJob('Mark');
         $this->backend->expects($this->once())
             ->method('reset')
-            ->with($this->equalTo([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Mark',
-                'try_again' => false,
-                'type' => 'job',
-            ]));
+            ->with(
+                $this->equalTo(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Mark',
+                        'try_again' => false,
+                        'type' => 'job',
+                    ]
+                )
+            );
         $this->pipeline->reset($job);
     }
 
@@ -137,12 +155,16 @@ class PipelineTest extends TestCase
         $job = new PipelineTestJob('Mark');
         $this->backend->expects($this->once())
             ->method('complete')
-            ->with($this->equalTo([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Mark',
-                'try_again' => false,
-                'type' => 'job',
-            ]));
+            ->with(
+                $this->equalTo(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Mark',
+                        'try_again' => false,
+                        'type' => 'job',
+                    ]
+                )
+            );
         $this->pipeline->complete($job);
     }
 
@@ -151,12 +173,16 @@ class PipelineTest extends TestCase
         $job = new PipelineTestJob('Mark');
         $this->backend->expects($this->once())
             ->method('fail')
-            ->with($this->equalTo([
-                'className' => 'Emphloyer\PipelineTestJob',
-                'name' => 'Mark',
-                'try_again' => false,
-                'type' => 'job',
-            ]));
+            ->with(
+                $this->equalTo(
+                    [
+                        'className' => 'Emphloyer\PipelineTestJob',
+                        'name' => 'Mark',
+                        'try_again' => false,
+                        'type' => 'job',
+                    ]
+                )
+            );
         $this->pipeline->fail($job);
     }
 

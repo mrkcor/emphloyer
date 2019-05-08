@@ -8,12 +8,12 @@ use PHPUnit\Framework\TestCase;
 
 class SerDesTestJob extends AbstractJob
 {
-    public function setName($name) : void
+    public function setName(string $name) : void
     {
         $this->attributes['name'] = $name;
     }
 
-    public function getName()
+    public function getName() : ?string
     {
         return $this->attributes['name'];
     }

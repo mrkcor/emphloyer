@@ -1,6 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
+
+use DateTime;
+use Emphloyer\Scheduler\Backend;
+use Emphloyer\Scheduler\ScheduleEntry;
+use Emphloyer\Scheduler\ScheduleEntryIterator;
+use Emphloyer\Scheduler\ScheduleEntrySerDes;
 
 /**
  * A Scheduler holds scheduled jobs to be done. A backend that implements the
@@ -9,37 +17,29 @@ namespace Emphloyer;
  */
 class Scheduler
 {
-    /**
-     * @var \Emphloyer\Scheduler\Backend
-     */
+    /** @var Backend */
     protected $backend;
-
-    /**
-     * @var \Emphloyer\JobSerDes
-     */
+    /** @var JobSerDes */
     protected $jobSerDes;
-
-    /**
-     * @var \Emphloyer\Scheduler\ScheduleEntrySerDes
-     */
+    /** @var ScheduleEntrySerDes */
     protected $entrySerDes;
 
     /**
      * Instantiate a new scheduler.
-     * @param \Emphloyer\Scheduler\Backend $backend Scheduler backend.
-     * @return \Emphloyer\Scheduler
+     *
+     * @param Backend $backend Scheduler backend.
      */
-    public function __construct(\Emphloyer\Scheduler\Backend $backend)
+    public function __construct(Backend $backend)
     {
-        $this->backend = $backend;
-        $this->jobSerDes = new \Emphloyer\JobSerDes();
-        $this->entrySerDes = new \Emphloyer\Scheduler\ScheduleEntrySerDes($this->jobSerDes);
+        $this->backend     = $backend;
+        $this->jobSerDes   = new JobSerDes();
+        $this->entrySerDes = new ScheduleEntrySerDes($this->jobSerDes);
     }
 
     /**
      * Reconnect the backend if required.
      */
-    public function reconnect()
+    public function reconnect() : void
     {
         $this->backend->reconnect();
     }
@@ -47,107 +47,123 @@ class Scheduler
     /**
      * Clear the entire schedule.
      */
-    public function clear()
+    public function clear() : void
     {
         $this->backend->clear();
     }
 
     /**
      * Find a specific entry in the schedule
+     *
      * @param mixed $id
      */
-    public function find($id)
+    public function find($id) : ?ScheduleEntry
     {
         $attributes = $this->backend->find($id);
-        if (!is_null($attributes)) {
+        if ($attributes !== null) {
             return $this->deserializeEntry($attributes);
         }
+
+        return null;
     }
 
     /**
      * Convert a schedule entry in array form to an object
-     * @param array $attributes
-     * @return \Emphloyer\Scheduler\ScheduleEntry
+     *
+     * @param mixed[] $attributes
      */
-    public function deserializeEntry(array $attributes)
+    public function deserializeEntry(array $attributes) : ScheduleEntry
     {
         return $this->entrySerDes->deserialize($attributes);
     }
 
     /**
      * Delete a specific entry in the schedule
+     *
      * @param mixed $id
      */
-    public function delete($id)
+    public function delete($id) : void
     {
         $this->backend->delete($id);
     }
 
     /**
      * List the entire schedule.
-     * @return \Emphloyer\Scheduler\ScheduleEntryIterator
      */
-    public function allEntries()
+    public function allEntries() : ScheduleEntryIterator
     {
-        return new \Emphloyer\Scheduler\ScheduleEntryIterator($this->backend->allEntries());
+        return new ScheduleEntryIterator($this->backend->allEntries());
     }
 
     /**
      * Schedule a job.
-     * @param array $job Job to schedule
-     * @param int $minute Minute to schedule on
-     * @param int $hour Hour to schedule on
-     * @param int $dayOfMonth Day of the month to schedule on
-     * @param int $month Month to schedule on
-     * @param int $dayOfWeek Week day to schedule on
-     * @return \Emphloyer\Scheduler\ScheduleEntry Scheduled entry
+     *
+     * @param Job      $job        Job to schedule
+     * @param int|null $minute     Minute to schedule on
+     * @param int|null $hour       Hour to schedule on
+     * @param int|null $dayOfMonth Day of the month to schedule on
+     * @param int|null $month      Month to schedule on
+     * @param int|null $dayOfWeek  Week day to schedule on
+     *
+     * @return ScheduleEntry Scheduled entry
      */
     public function schedule(
         Job $job,
-        $minute = null,
-        $hour = null,
-        $dayOfMonth = null,
-        $month = null,
-        $dayOfWeek = null
-    ) {
-        $attributes = $this->backend->schedule($this->serializeJob($job), $minute, $hour, $dayOfMonth, $month,
-            $dayOfWeek);
+        ?int $minute = null,
+        ?int $hour = null,
+        ?int $dayOfMonth = null,
+        ?int $month = null,
+        ?int $dayOfWeek = null
+    ) : ScheduleEntry {
+        $attributes = $this->backend->schedule(
+            $this->serializeJob($job),
+            $minute,
+            $hour,
+            $dayOfMonth,
+            $month,
+            $dayOfWeek
+        );
+
         return $this->deserializeEntry($attributes);
     }
 
     /**
      * Convert a job into an array that can be passed on to a backend.
-     * @param \Emphloyer\Job $job
-     * @return array
+     *
+     * @return mixed[]
      */
-    protected function serializeJob(Job $job)
+    protected function serializeJob(Job $job) : array
     {
         return $this->jobSerDes->serialize($job);
     }
 
     /**
      * Get jobs scheduled for the given DateTime.
-     * @param \DateTime $dateTime
-     * @param boolean $lock Lock the jobs found for a minute (to prevent concurrently running schedulers from picking them up)
-     * @return array Jobs to be run for given DateTime.
+     *
+     * @param DateTime $dateTime Date and time to get jobs for
+     * @param bool     $lock     Lock the jobs found for a minute (to prevent concurrently running schedulers from
+     *                           picking them up)
+     *
+     * @return Job[] Jobs to be run for given DateTime.
      */
-    public function getJobsFor(\DateTime $dateTime, $lock = true)
+    public function getJobsFor(DateTime $dateTime, bool $lock = true) : array
     {
-        $dateTime->setTime($dateTime->format("H"), $dateTime->format("i"), 0);
+        $dateTime->setTime((int) $dateTime->format('H'), (int) $dateTime->format('i'), 0);
         $serializedJobs = $this->backend->getJobsFor($dateTime, $lock);
-        $jobs = array();
+        $jobs           = [];
         foreach ($serializedJobs as $job) {
             $jobs[] = $this->deserializeJob($job);
         }
+
         return $jobs;
     }
 
     /**
      * Convert an array provided by a backend into a Job instance.
-     * @param array $attributes
-     * @return \Emphloyer\Job
+     *
+     * @param mixed[] $attributes
      */
-    protected function deserializeJob($attributes)
+    protected function deserializeJob(array $attributes) : Job
     {
         return $this->jobSerDes->deserialize($attributes);
     }

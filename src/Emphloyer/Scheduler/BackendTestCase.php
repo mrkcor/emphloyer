@@ -14,7 +14,7 @@ class BackendTestJob extends \Emphloyer\AbstractJob
         return $this->attributes['name'];
     }
 
-    public function perform()
+    public function perform() : void
     {
     }
 }

@@ -1,118 +1,134 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Scheduler;
+
+use ArrayIterator;
+use DateTime;
+use Iterator;
 
 /**
  * MemoryBackend provides you with a backend for the Scheduler that works within PHP's memory.
- * This backend is of use as an example and to build your own scripts making use of Emphloyer to run tasks in a specific schedule.
+ * This backend is of use as an example and to build your own scripts making use of Emphloyer to run tasks in a
+ * specific schedule.
  */
 class MemoryBackend implements Backend
 {
+    /** @var int */
     protected $nr = 0;
-    protected $schedule = array();
+    /** @var mixed[] */
+    protected $schedule = [];
 
-    /**
-     * Reconnect the backend.
-     */
-    public function reconnect()
+    /** @inheritDoc */
+    public function reconnect() : void
     {
     }
 
-    public function clear()
+    /** @inheritDoc */
+    public function clear() : void
     {
-        $this->nr = 0;
-        $this->schedule = array();
+        $this->nr       = 0;
+        $this->schedule = [];
     }
 
-    public function allEntries()
+    /** @inheritDoc */
+    public function allEntries() : Iterator
     {
-        return new \ArrayIterator($this->schedule);
+        return new ArrayIterator($this->schedule);
     }
 
-    public function find($id)
+    /** @inheritDoc */
+    public function find($id) : ?array
     {
         foreach ($this->schedule as $entry) {
-            if ($entry["id"] == $id) {
+            if ($entry['id'] === $id) {
                 return $entry;
             }
         }
+
+        return null;
     }
 
-    public function delete($id)
+    /** @inheritDoc */
+    public function delete($id) : void
     {
         foreach ($this->schedule as $idx => $entry) {
-            if ($entry["id"] == $id) {
+            if ($entry['id'] === $id) {
                 unset($this->schedule[$idx]);
                 break;
             }
         }
     }
 
+    /** @inheritDoc */
     public function schedule(
         array $job,
-        $minute = null,
-        $hour = null,
-        $dayOfMonth = null,
-        $month = null,
-        $dayOfWeek = null
-    ) {
-        $this->nr += 1;
-        $id = $this->nr;
-        $job['id'] = $id;
-        $entry = array(
-            "id" => $id,
-            "job" => $job,
-            "minute" => $minute,
-            "hour" => $hour,
-            "dayOfMonth" => $dayOfMonth,
-            "month" => $month,
-            "dayOfWeek" => $dayOfWeek,
-            "locked" => null
-        );
+        ?int $minute = null,
+        ?int $hour = null,
+        ?int $dayOfMonth = null,
+        ?int $month = null,
+        ?int $dayOfWeek = null
+    ) : array {
+        $this->nr        += 1;
+        $id               = $this->nr;
+        $job['id']        = $id;
+        $entry            = [
+            'id' => $id,
+            'job' => $job,
+            'minute' => $minute,
+            'hour' => $hour,
+            'dayOfMonth' => $dayOfMonth,
+            'month' => $month,
+            'dayOfWeek' => $dayOfWeek,
+            'locked' => null,
+        ];
         $this->schedule[] = $entry;
+
         return $entry;
     }
 
-    public function getJobsFor(\DateTime $dateTime, $lock = true)
+    /** @inheritDoc */
+    public function getJobsFor(DateTime $dateTime, bool $lock = true) : array
     {
-        $jobs = array();
+        $jobs = [];
 
-        $minute = $dateTime->format("i");
-        $hour = $dateTime->format("H");
-        $dayOfMonth = $dateTime->format("d");
-        $month = $dateTime->format("m");
-        $dayOfWeek = $dateTime->format("w");
+        $minute     = (int) $dateTime->format('i');
+        $hour       = (int) $dateTime->format('H');
+        $dayOfMonth = (int) $dateTime->format('d');
+        $month      = (int) $dateTime->format('m');
+        $dayOfWeek  = (int) $dateTime->format('w');
 
         foreach ($this->schedule as $idx => $schedule) {
-            if (!is_null($schedule["minute"]) && $schedule["minute"] != $minute) {
+            if ($schedule['minute'] !== null && $schedule['minute'] !== $minute) {
                 continue;
             }
 
-            if (!is_null($schedule["hour"]) && $schedule["hour"] != $hour) {
+            if ($schedule['hour'] !== null && $schedule['hour'] !== $hour) {
                 continue;
             }
 
-            if (!is_null($schedule["dayOfMonth"]) && $schedule["dayOfMonth"] != $dayOfMonth) {
+            if ($schedule['dayOfMonth'] !== null && $schedule['dayOfMonth'] !== $dayOfMonth) {
                 continue;
             }
 
-            if (!is_null($schedule["month"]) && $schedule["month"] != $month) {
+            if ($schedule['month'] !== null && $schedule['month'] !== $month) {
                 continue;
             }
 
-            if (!is_null($schedule["dayOfWeek"]) && $schedule["dayOfWeek"] != $dayOfWeek) {
+            if ($schedule['dayOfWeek'] !== null && $schedule['dayOfWeek'] !== $dayOfWeek) {
                 continue;
             }
 
             if ($lock) {
-                if (is_null($schedule["locked"]) || $schedule["locked"] < $dateTime) {
-                    $this->schedule[$idx]["locked"] = $dateTime;
-                } else {
+                if ($schedule['locked'] !== null && $schedule['locked'] >= $dateTime) {
                     continue;
                 }
+
+                $this->schedule[$idx]['locked'] = $dateTime;
             }
 
-            $jobs[] = $schedule["job"];
+            $jobs[] = $schedule['job'];
         }
 
         return $jobs;

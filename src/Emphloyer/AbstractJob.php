@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer;
 
 /**
@@ -7,63 +9,55 @@ namespace Emphloyer;
  */
 abstract class AbstractJob implements Job
 {
-    protected $attributes = array();
+    /** @var mixed[] */
+    protected $attributes = [];
+    /** @var string */
     protected $type = 'job';
 
     /**
-     * Once a job has been enqueued it must have some sort of unique id.
-     * @return mixed
+     * @inheritDoc
      */
     public function getId()
     {
-        if (isset($this->attributes['id'])) {
-            return $this->attributes['id'];
-        }
+        return $this->attributes['id'] ?? null;
     }
 
     /**
-     * Return the type of the job. Setting the type in your own implementations
-     * allows you to control how much bandwith particular jobs get.
-     * @return string
+     * @inheritDoc
      */
-    public function getType()
+    public function getType() : string
     {
         return $this->type;
     }
 
     /**
-     * Set the type of the job.
-     * @param string $type
-     * @return void
+     * @inheritDoc
      */
-    public function setType($type)
+    public function setType(string $type) : void
     {
         $this->type = $type;
     }
 
     /**
-     * If this method returns true then this job will be retried on failure.
-     * @return bool
+     * @inheritDoc
      */
-    public function mayTryAgain()
+    public function mayTryAgain() : bool
     {
         return false;
     }
 
     /**
-     * Return the attributes to store when queueing this job.
-     * @return array
+     * @inheritDoc
      */
-    public function getAttributes()
+    public function getAttributes() : array
     {
         return $this->attributes;
     }
 
     /**
-     * Set the attributes for this job (used when loading a job).
-     * @param array $attributes
+     * @inheritDoc
      */
-    public function setAttributes($attributes)
+    public function setAttributes(array $attributes) : void
     {
         $this->attributes = $attributes;
     }

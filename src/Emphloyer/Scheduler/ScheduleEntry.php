@@ -1,76 +1,78 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Scheduler;
+
+use Emphloyer\Job;
 
 class ScheduleEntry
 {
     /**
      * Scheduled job
-     * @var \Emphloyer\Job
+     *
+     * @var Job
      */
     protected $job;
-
     /**
      * Minute to schedule on
+     *
      * @var int
      */
     protected $minute;
-
     /**
      * Hour to schedule on
+     *
      * @var int
      */
     protected $hour;
-
     /**
      * Day of the month to schedule on
+     *
      * @var int
      */
     protected $dayOfMonth;
-
     /**
      * Month to schedule on
+     *
      * @var int
      */
     protected $month;
-
     /**
      * Week day to schedule on
+     *
      * @var int
      */
     protected $dayOfWeek;
 
     /**
-     * @param \Emphloyer\Job $job Job to schedule
-     * @param mixed $id Schedule entry ID
-     * @param int $minute Minute to schedule on
-     * @param int $hour Hour to schedule on
-     * @param int $dayOfMonth Day of the month to schedule on
-     * @param int $month Month to schedule on
-     * @param int $dayOfWeek Week day to schedule on
+     * @param Job      $job        Job to schedule
+     * @param mixed    $id         Schedule entry ID
+     * @param int|null $minute     Minute to schedule on
+     * @param int|null $hour       Hour to schedule on
+     * @param int|null $dayOfMonth Day of the month to schedule on
+     * @param int|null $month      Month to schedule on
+     * @param int|null $dayOfWeek  Week day to schedule on
      */
     public function __construct(
-        \Emphloyer\Job $job,
+        Job $job,
         $id = null,
-        $minute = null,
-        $hour = null,
-        $dayOfMonth = null,
-        $month = null,
-        $dayOfWeek = null
+        ?int $minute = null,
+        ?int $hour = null,
+        ?int $dayOfMonth = null,
+        ?int $month = null,
+        ?int $dayOfWeek = null
     ) {
-        $this->job = $job;
-        $this->id = $id;
-        $this->minute = $minute;
-        $this->hour = $hour;
+        $this->job        = $job;
+        $this->id         = $id;
+        $this->minute     = $minute;
+        $this->hour       = $hour;
         $this->dayOfMonth = $dayOfMonth;
-        $this->month = $month;
-        $this->dayOfWeek = $dayOfWeek;
+        $this->month      = $month;
+        $this->dayOfWeek  = $dayOfWeek;
     }
 
-    /**
-     * @return \Emphloyer\Job
-     */
-    public function getJob()
+    public function getJob() : Job
     {
         return $this->job;
     }
@@ -83,42 +85,27 @@ class ScheduleEntry
         return $this->id;
     }
 
-    /**
-     * @return int
-     */
-    public function getMinute()
+    public function getMinute() : ?int
     {
         return $this->minute;
     }
 
-    /**
-     * @return int
-     */
-    public function getHour()
+    public function getHour() : ?int
     {
         return $this->hour;
     }
 
-    /**
-     * @return int
-     */
-    public function getDayOfMonth()
+    public function getDayOfMonth() : ?int
     {
         return $this->dayOfMonth;
     }
 
-    /**
-     * @return int
-     */
-    public function getMonth()
+    public function getMonth() : ?int
     {
         return $this->month;
     }
 
-    /**
-     * @return int
-     */
-    public function getDayOfWeek()
+    public function getDayOfWeek() : ?int
     {
         return $this->dayOfWeek;
     }

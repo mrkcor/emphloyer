@@ -1,31 +1,36 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Scheduler;
+
+use Emphloyer\JobSerDes;
 
 class ScheduleEntrySerDes
 {
-    /**
-     * @var \Emphloyer\JobSerDes
-     */
+    /** @var JobSerDes */
     protected $jobSerDes;
 
-    /**
-     * @param \Emphloyer\JobSerDes $jobSerDes
-     */
-    public function __construct(\Emphloyer\JobSerDes $jobSerDes)
+    public function __construct(JobSerDes $jobSerDes)
     {
         $this->jobSerDes = $jobSerDes;
     }
 
     /**
-     * @param array $attributes
-     * @return \Emphloyer\Scheduler\ScheduleEntry
+     * @param mixed[] $attributes
      */
-    public function deserialize(array $attributes)
+    public function deserialize(array $attributes) : ScheduleEntry
     {
-        $job = $this->jobSerDes->deserialize($attributes["job"]);
-        $entry = new \Emphloyer\Scheduler\ScheduleEntry($job, $attributes["id"], $attributes["minute"],
-            $attributes["hour"], $attributes["dayOfMonth"], $attributes["month"], $attributes["dayOfWeek"]);
-        return $entry;
+        $job = $this->jobSerDes->deserialize($attributes['job']);
+
+        return new ScheduleEntry(
+            $job,
+            $attributes['id'],
+            $attributes['minute'],
+            $attributes['hour'],
+            $attributes['dayOfMonth'],
+            $attributes['month'],
+            $attributes['dayOfWeek']
+        );
     }
 }

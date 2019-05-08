@@ -1,30 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Scheduler;
 
-class ScheduleEntryIterator extends \IteratorIterator
+use Emphloyer\JobSerDes;
+use IteratorIterator;
+use Traversable;
+
+class ScheduleEntryIterator extends IteratorIterator
 {
-    /**
-     * @var \Emphloyer\Scheduler\ScheduleEntrySerDes
-     */
+    /** @var ScheduleEntrySerDes */
     protected $serDes;
 
-    /**
-     * @param \Traversable $source
-     */
-    public function __construct(\Traversable $source)
+    public function __construct(Traversable $source)
     {
         parent::__construct($source);
-        $this->serDes = new \Emphloyer\Scheduler\ScheduleEntrySerDes(new \Emphloyer\JobSerDes());
+        $this->serDes = new ScheduleEntrySerDes(new JobSerDes());
     }
 
     /**
      * Convert an array with schedule entry attributes into an object
-     * @return \Emphloyer\Scheduler\ScheduleEntry
      */
-    public function current()
+    public function current() : ScheduleEntry
     {
         $attributes = parent::current();
+
         return $this->serDes->deserialize($attributes);
     }
 }

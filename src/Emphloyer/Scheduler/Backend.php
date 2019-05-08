@@ -1,6 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Emphloyer\Scheduler;
+
+use DateTime;
+use Iterator;
 
 /**
  * Implement this interface to build your own Scheduler backend.
@@ -10,56 +15,63 @@ interface Backend
     /**
      * Reconnect the backend.
      */
-    public function reconnect();
+    public function reconnect() : void;
 
     /**
      * Clear the entire schedule.
      */
-    public function clear();
+    public function clear() : void;
 
     /**
      * List the entire schedule.
-     * @return \Iterator
      */
-    public function allEntries();
+    public function allEntries() : Iterator;
 
     /**
      * Find a specific entry in the schedule using its id and return its attributes.
+     *
      * @param mixed $id
-     * @return array|null
+     *
+     * @return mixed[]|null
      */
-    public function find($id);
+    public function find($id) : ?array;
 
     /**
      * Delete an entry from the schedule using its id
+     *
      * @param mixed $id
      */
-    public function delete($id);
+    public function delete($id) : void;
 
     /**
      * Schedule a job.
-     * @param array $job Job to schedule
-     * @param int $minute Minute to schedule on
-     * @param int $hour Hour to schedule on
-     * @param int $dayOfMonth Day of the month to schedule on
-     * @param int $month Month to schedule on
-     * @param int $dayOfWeek Week day to schedule on
-     * @return array Attributes of scheduled entry
+     *
+     * @param mixed[]  $job        Job to schedule
+     * @param int|null $minute     Minute to schedule on
+     * @param int|null $hour       Hour to schedule on
+     * @param int|null $dayOfMonth Day of the month to schedule on
+     * @param int|null $month      Month to schedule on
+     * @param int|null $dayOfWeek  Week day to schedule on
+     *
+     * @return mixed[] Attributes of scheduled entry
      */
     public function schedule(
         array $job,
-        $minute = null,
-        $hour = null,
-        $dayOfMonth = null,
-        $month = null,
-        $dayOfWeek = null
-    );
+        ?int $minute = null,
+        ?int $hour = null,
+        ?int $dayOfMonth = null,
+        ?int $month = null,
+        ?int $dayOfWeek = null
+    ) : array;
 
     /**
      * Get jobs scheduled for the given DateTime.
-     * @param \DateTime $dateTime
-     * @param boolean $lock Lock the jobs found for a minute (to prevent concurrently running schedulers from picking them up)
-     * @return array Jobs to be run for given DateTime.
+     *
+     * @param DateTime $dateTime Date and time to get jobs for
+     * @param bool     $lock     Lock the jobs found for a minute (to prevent concurrently running schedulers from
+     *                           picking them up)
+     *
+     * @return mixed[] Jobs to be run for given DateTime.
      */
-    public function getJobsFor(\DateTime $dateTime, $lock = true);
+    public function getJobsFor(DateTime $dateTime, bool $lock = true) : array;
 }
